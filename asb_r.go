@@ -4,14 +4,15 @@ import (
 	 "os"  
      "io"  
      "bufio"
- //    "io/ioutil"  
-     //TT "time"
      "strings"
- //    "sort"
      "path/filepath"
      "encoding/csv"
-     //"strconv"
-    //"encoding/json"
+     "fmt"
+    // "sort"
+    // "io/ioutil"  
+    // TT "time"
+    // "strconv"
+    // "encoding/json"
 )
 
 type Test struct{
@@ -48,7 +49,6 @@ var(
 
 	unique_ifa map[string] int
 	set_count map[string] int
-	count int
 	m map[string] int
 	
 	unique_record = false
@@ -63,6 +63,7 @@ var(
     csv_file = "GeoLite2-City-Locations-zh-CN - GeoLite2-City-Locations-zh-CN.csv"
 )
 
+func check(e error) {if e != nil {panic(e)}}
 
 /*
  *	get all files in the path.
@@ -85,9 +86,7 @@ func GetFilelist(path string) []string{
     	return nil
         //fmt.Printf("filepath.Walk() returned %v\n", err)
     }
-    // for _,file := range files {
-    // 	println(file)
-    // }
+    // for _,file := range files {println(file)}
     return files
 }
 
@@ -180,35 +179,16 @@ func Compare_csv(file string, m map[string] int, TAG string) map[string] int{
  */
 
 func Read_Records(path string, rl *[]Record) int{
-
+	count := 0
 	//pricing_model := "CPM"
-	current_set := "none"
-	time := "220003632"
-	app_id := "none"
-	camp_id := "none"
-	id := "0"
-	ip := "0"
-	os_n := "0"
-	os_v := "0"
-	device_id := "0"
-	device_mac := "0"
-	device_type := "0"
-	device_ifa := "0"
-	city := "0"
-	//value := "0"
+	var current_set, time, app_id, camp_id, id, ip, device_ifa,
+	os_n, os_v, device_id, device_mac, device_type, city string
 
 	f, err := os.Open(path)
 	if err != nil{panic(err)}  
 	defer f.Close()
 	
-	
-	// file, err :=os.Create("result.csv")
-	// if err !=nil{panic(err)}
-	// defer file.Close()
-	// writer := csv.NewWriter(file)
-	//fmt.Println("current_set", "time", "app_id", "os_v", "device_ifa", "camp_id", "ip", "device_id", "device_mac", "device_type", "city")
-	//flag := true
-	//fmt.Println("reading ", path)
+	head_flag := false
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		//fmt.Println(scanner.Text())
@@ -219,10 +199,14 @@ func Read_Records(path string, rl *[]Record) int{
 				//i, _ := strconv.ParseInt(time, 10, 64)
 				//time := TT.Unix(i, 0).String()
 				//build a record
-				*rl = append(*rl, Record{Id:id, Set:current_set, Time: time, App_id:app_id, 
-					Camp_id:camp_id, Ip:ip, Os_n:os_n, Os_v:os_v, Device_id:device_id, 
-					Device_mac:device_mac, Device_type:device_type, Device_ifa:device_ifa, City:city})
-				count++
+				if head_flag{
+					*rl = append(*rl, Record{Id:id, Set:current_set, Time: time, App_id:app_id, 
+						Camp_id:camp_id, Ip:ip, Os_n:os_n, Os_v:os_v, Device_id:device_id, 
+						Device_mac:device_mac, Device_type:device_type, Device_ifa:device_ifa, City:city})
+					count++
+				} else{
+					head_flag = true
+				} 
 			}
 			
 			switch {
@@ -276,10 +260,32 @@ func Read_Records(path string, rl *[]Record) int{
 			}
 		}
 	}
+	if err := scanner.Err(); err != nil {
+        println(os.Stderr, err)
+  	} else if !scanner.Scan() {
+  		if head_flag{
+			*rl = append(*rl, Record{Id:id, Set:current_set, Time: time, App_id:app_id, 
+				Camp_id:camp_id, Ip:ip, Os_n:os_n, Os_v:os_v, Device_id:device_id, 
+				Device_mac:device_mac, Device_type:device_type, Device_ifa:device_ifa, City:city})
+			count++
+		} 
+  	}
 	// fmt.Println("len:",len(rl))
 	// fmt.Println("id:",rl[len(rl)-1].Id)
 	//printMap(unique_ifa)
 	return count
+}
+
+func Write_Array(path string, IPs []string) error{//m map[string] []dt.Record) {
+	f, err := os.Create(path)
+    check(err)
+    defer f.Close()
+    w := bufio.NewWriter(f)
+    //n4, err := w.WriteString(keys)
+    for _, ip := range IPs {
+	    fmt.Fprintln(w, ip)
+	}
+  	return w.Flush()
 }
 
 //testing 
