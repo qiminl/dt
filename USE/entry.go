@@ -8,7 +8,7 @@ import (
 	"bufio"
 	"strings"
 	"os"
-	"strconv"
+	//"strconv"
 	"io/ioutil"
 )
 
@@ -69,52 +69,34 @@ func test_reader(){
   	}
 }
 
-func Read_Records_From_Folder (rl *[]dt.Record, folder string) int{
-
-	var count int;
+func read_dir_IPs(dir string){
 	start := time.Now()
-	files := dt.GetFilelist(folder)
-	fmt.Println(folder, "#file=", len(files))
-	for _,file := range files{
-		//imp +=  read_field(file, m, TAG)
-		//imp+= read_record(file, m, TAG)
-		fmt.Println("file: " ,file)
-		count += dt.Read_Records(file, rl)
-		//fmt.Println(count)
- 	}
- 	t2 := time.Now()
-    fmt.Printf("load data time cost %v\n",t2.Sub(start)) 
-    return count
-}
-
-
-
-func main(){
-
-	//test_reader()
-	//mash_test()
-
-	rl := &[]dt.Record{}
-
-	folder_IPs :="E:\\backup\\IPs\\"
-
-	hmm, _ := ioutil.ReadDir("E:\\backup\\")
+	hmm, _ := ioutil.ReadDir(dir)
     for _, f := range hmm {
+
+    	rl := &[]dt.Record{}
+		
     	date = f.Name()
     	folder = folder_base+ date
 
-    	count = Read_Records_From_Folder(rl, folder) 
+    	count = dt.Read_Records_From_Folder(rl, folder) 
 		// RecordList2D := &dt.RecordList{*rl}
 		// RecordList2B, _ := json.Marshal(RecordList2D)
 		// fmt.Println(string(RecordList2B))
-		fmt.Println("count=",count)
+		//fmt.Println("count=",count)
 		//fmt.Println("#elements :", (*rl)[0].Ip)
 
-		IPList := make (map[string][]dt.Record)
+    	IPList := make (map[string][]dt.Record)
 		for index := range *rl{
 			IPList[(*rl)[index].Ip] = append(IPList[(*rl)[index].Ip], (*rl)[index])
 		}
-		fmt.Println("Unique IP :", len(IPList))
+		fmt.Println("date:",date," has Unique IP :", len(IPList))
+
+		// UniqueId := make (map[string][]dt.Record)
+		// for index := range *rl{
+		// 	UniqueId[(*rl)[index].Id] = append(UniqueId[(*rl)[index].Id], (*rl)[index])
+		// }
+		// fmt.Println("UniqueId :", len(UniqueId))
 
 		IPs := make([]string, len(IPList))
 		i := 0
@@ -122,11 +104,42 @@ func main(){
 		    IPs[i] = k
 		    i++
 		}
-		dt.Write_Array(folder_IPs+date+"_"+strconv.Itoa(len(IPList))+".txt", IPs)
+
+		//folder_IPs :="E:\\backup\\IPs\\"
+		//dt.Write_Array(folder_IPs+date+"_"+strconv.Itoa(len(IPList))+".txt", IPs)
     }
-	// UniqueId := make (map[string][]dt.Record)
-	// for index := range *rl{
-	// 	UniqueId[(*rl)[index].Id] = append(UniqueId[(*rl)[index].Id], (*rl)[index])
-	// }
-	// fmt.Println("UniqueId :", len(UniqueId))
+
+ 	t2 := time.Now()
+ 	fmt.Printf("load data time cost %v\n",t2.Sub(start)) 
+}
+
+func Output_Json (dir string){
+
+	start := time.Now()
+	hmm, _ := ioutil.ReadDir(dir)
+	fmt.Println("Reading DIR=",dir)
+    for _, f := range hmm {
+	    rl := &[]dt.Record{}
+
+		date = f.Name()
+    	folder = folder_base+ date
+		count = dt.Read_Records_From_Folder(rl, folder) 
+
+		folder_Ouputs :="E:\\backup\\JsonOutputs\\"
+		dt.Write_json_Array(folder_Ouputs+date+".json", rl)
+
+	}
+	 t2 := time.Now()
+ 	fmt.Printf("load data time cost %v\n",t2.Sub(start)) 
+}
+
+func main(){
+
+	//test_reader()
+	//mash_test()
+
+	//read_dir_IPs(folder_base)
+
+	Output_Json (folder_base)
+
 }

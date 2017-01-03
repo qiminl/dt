@@ -9,10 +9,10 @@ import (
      "encoding/csv"
      "fmt"
     // "sort"
-    // "io/ioutil"  
+     "io/ioutil"  
     // TT "time"
     // "strconv"
-    // "encoding/json"
+     "encoding/json"
 )
 
 type Test struct{
@@ -81,7 +81,7 @@ func GetFilelist(path string) []string{
         files = append(files, path)
         return nil
     })
-    println("diu")
+    //println("diu")
     if err != nil {
     	return nil
         //fmt.Printf("filepath.Walk() returned %v\n", err)
@@ -178,7 +178,7 @@ func Compare_csv(file string, m map[string] int, TAG string) map[string] int{
  *  @return 	count of record
  */
 
-func Read_Records(path string, rl *[]Record) int{
+func Read_Records_From_File(path string, rl *[]Record) int{
 	count := 0
 	//pricing_model := "CPM"
 	var current_set, time, app_id, camp_id, id, ip, device_ifa,
@@ -276,6 +276,22 @@ func Read_Records(path string, rl *[]Record) int{
 	return count
 }
 
+func Read_Records_From_Folder (rl *[]Record, folder string) int{
+
+	var count int;
+	files := GetFilelist(folder)
+	//fmt.Println(folder, "#file=", len(files))
+	for _,file := range files{
+		//imp +=  read_field(file, m, TAG)
+		//imp+= read_record(file, m, TAG)
+		//fmt.Println("file: " ,file)
+		count += Read_Records_From_File(file, rl)
+		//fmt.Println(count)
+ 	}
+    return count
+}
+
+
 func Write_Array(path string, IPs []string) error{//m map[string] []dt.Record) {
 	f, err := os.Create(path)
     check(err)
@@ -286,6 +302,35 @@ func Write_Array(path string, IPs []string) error{//m map[string] []dt.Record) {
 	    fmt.Fprintln(w, ip)
 	}
   	return w.Flush()
+}
+
+func Write_json_Array(path string, rl *[]Record){//m map[string] []dt.Record) {
+	
+	fmt.Println("Date read ",path)
+	RecordList2D := &RecordList{*rl}
+	RecordList2B, _ := json.MarshalIndent(RecordList2D, "", "  ")
+	//fmt.Println(string(RecordList2B))
+	//fmt.Println("#elements :", (*rl)[0].Ip)
+		
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			os.Mkdir(path, 0755)
+		} else {
+			println(err)
+		}
+	}
+	ioutil.WriteFile(path, RecordList2B, 0644)
+
+
+	// f, err := os.Create(path)
+ //    check(err)
+ //    defer f.Close()
+ //    w := bufio.NewWriter(f)
+ //    //n4, err := w.WriteString(keys)
+ //    for _, ip := range RecordList2B {
+	//     fmt.Printf(w, ip)
+	// }
+ //  	return w.Flush()
 }
 
 //testing 
