@@ -34,11 +34,15 @@ type Record struct{
 	Ip 		string`json:"ip"`
 	Os_n	string `json:"os_v"`
 	Os_v	string`json:"os_v"`
-	Device_id 	string`json:"device_id"`
-	Device_mac 	string`json:"device_mac"`
-	Device_type string`json:"device_type"`
-	Device_ifa 	string`json:"device_ifa"`
-	City 		string`json:"city"`
+	Device_id 		string`json:"device_id"`
+	Device_mac 		string`json:"device_mac"`
+	Device_type 	string`json:"device_type"`
+	Device_ifa 		string`json:"device_ifa"`
+	City 			string`json:"city"`
+	Device_vendor 	string `json:"device_vendor"`
+	Carrier_code 	string `json:"carrier_code"`
+	Android_ifa 	string `json:"android_ifa"`
+	Device_model 	string `json:"device_model"`
 }
 
 type RecordList struct{
@@ -182,7 +186,8 @@ func Read_Records_From_File(path string, rl *[]Record) int{
 	count := 0
 	//pricing_model := "CPM"
 	var current_set, time, app_id, camp_id, id, ip, device_ifa,
-	os_n, os_v, device_id, device_mac, device_type, city string
+	os_n, os_v, device_id, device_mac, device_type, city,device_vendor, 
+	carrier_code, android_ifa, device_model string 
 
 	f, err := os.Open(path)
 	if err != nil{panic(err)}  
@@ -202,7 +207,10 @@ func Read_Records_From_File(path string, rl *[]Record) int{
 				if head_flag{
 					*rl = append(*rl, Record{Id:id, Set:current_set, Time: time, App_id:app_id, 
 						Camp_id:camp_id, Ip:ip, Os_n:os_n, Os_v:os_v, Device_id:device_id, 
-						Device_mac:device_mac, Device_type:device_type, Device_ifa:device_ifa, City:city})
+						Device_mac:device_mac, Device_type:device_type, Device_ifa:device_ifa, City:city,
+						Device_vendor:device_vendor, Carrier_code:carrier_code, Android_ifa:android_ifa,
+						Device_model:device_model})
+					device_model = ""
 					count++
 				} else{
 					head_flag = true
@@ -250,6 +258,24 @@ func Read_Records_From_File(path string, rl *[]Record) int{
 			//device_ifa
 			case line[2]== "device_ifa" && len(line)>4 :
 				device_ifa = line[4]
+			//device_vendor
+			case line[2]== "device_vendor" && len(line)>4 :
+				device_vendor = line[4]
+			//device_model
+			case line[2]== "device_model" && len(line)>4 :
+				for loo:=3; loo< len(line); loo++{
+					device_model += line[loo]
+				}
+			//gender
+			// case line[2]== "gender" && len(line)>4 :
+			// 		gender = line[3]
+			//carrier_code
+			case line[2]== "carrier_code" && len(line)>3 :
+				carrier_code = line[3]
+
+			//carrier_code
+			case line[2]== "android_ifa" && len(line)>3 :
+				android_ifa = line[3]
 			}
 			
 			if len(line)>=5 {
@@ -265,8 +291,10 @@ func Read_Records_From_File(path string, rl *[]Record) int{
   	} else if !scanner.Scan() {
   		if head_flag{
 			*rl = append(*rl, Record{Id:id, Set:current_set, Time: time, App_id:app_id, 
-				Camp_id:camp_id, Ip:ip, Os_n:os_n, Os_v:os_v, Device_id:device_id, 
-				Device_mac:device_mac, Device_type:device_type, Device_ifa:device_ifa, City:city})
+						Camp_id:camp_id, Ip:ip, Os_n:os_n, Os_v:os_v, Device_id:device_id, 
+						Device_mac:device_mac, Device_type:device_type, Device_ifa:device_ifa, City:city,
+						Device_vendor:device_vendor, Carrier_code:carrier_code, Android_ifa:android_ifa,
+						Device_model:device_model})
 			count++
 		} 
   	}
@@ -276,17 +304,20 @@ func Read_Records_From_File(path string, rl *[]Record) int{
 	return count
 }
 
+/*
+ *	Read .asb files into JSON format for our portum data structure. 
+ *  @param path absolute path to the asb file.
+ *	@param rl 	structure of the our data record
+ *  @return 	count of record
+ */
 func Read_Records_From_Folder (rl *[]Record, folder string) int{
 
 	var count int;
 	files := GetFilelist(folder)
-	//fmt.Println(folder, "#file=", len(files))
+	//println(folder, "#file=", len(files))
 	for _,file := range files{
-		//imp +=  read_field(file, m, TAG)
-		//imp+= read_record(file, m, TAG)
-		//fmt.Println("file: " ,file)
 		count += Read_Records_From_File(file, rl)
-		//fmt.Println(count)
+		println(file," with ",count)
  	}
     return count
 }
@@ -306,19 +337,23 @@ func Write_Array(path string, IPs []string) error{//m map[string] []dt.Record) {
 
 func Write_json_Array(path string, rl *[]Record){//m map[string] []dt.Record) {
 	
-	fmt.Println("Date read ",path)
+	
 	RecordList2D := &RecordList{*rl}
-	RecordList2B, _ := json.MarshalIndent(RecordList2D, "", "  ")
+	RecordList2B, err := json.MarshalIndent(RecordList2D, "", "  ")
+	if err!=nil{
+		panic(err)
+	}
+	fmt.Println("Date writing to ",path, "\nRecordList.len=", len(*rl))
 	//fmt.Println(string(RecordList2B))
 	//fmt.Println("#elements :", (*rl)[0].Ip)
 		
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			os.Mkdir(path, 0755)
-		} else {
-			println(err)
-		}
-	}
+	// if _, err := os.Stat(path); err != nil {
+	// 	if os.IsNotExist(err) {
+	// 		os.Mkdir(path, 0755)
+	// 	} else {
+	// 		println(err)
+	// 	}
+	// }
 	ioutil.WriteFile(path, RecordList2B, 0644)
 
 

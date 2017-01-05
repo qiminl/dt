@@ -8,15 +8,17 @@ import (
 	"bufio"
 	"strings"
 	"os"
-	//"strconv"
+	"strconv"
 	"io/ioutil"
 )
 
 var(
 	count int;
 	date = "2016-12-29"
-//	folder_base ="/Users/edward/work/backup/"
-	folder_base ="E:\\backup\\"
+	folder_base ="/Users/edward/work/backup/"
+	// folder_base ="E:\\backup\\"
+	folder_Ouputs = "/Users/edward/work/JsonOutputs/"
+	// folder_Ouputs ="E:\\backup\\JsonOutputs\\"
 	folder = folder_base+ date
 
 	line []string 
@@ -105,8 +107,8 @@ func read_dir_IPs(dir string){
 		    i++
 		}
 
-		//folder_IPs :="E:\\backup\\IPs\\"
-		//dt.Write_Array(folder_IPs+date+"_"+strconv.Itoa(len(IPList))+".txt", IPs)
+		folder_IPs :="/Users/edward/work/IPs/"
+		dt.Write_Array(folder_IPs+date+"_"+strconv.Itoa(len(IPList))+".txt", IPs)
     }
 
  	t2 := time.Now()
@@ -124,12 +126,11 @@ func Output_Json (dir string){
 		date = f.Name()
     	folder = folder_base+ date
 		count = dt.Read_Records_From_Folder(rl, folder) 
-
-		folder_Ouputs :="E:\\backup\\JsonOutputs\\"
+		fmt.Println("rl: ", len(*rl), "; count=",count)
 		dt.Write_json_Array(folder_Ouputs+date+".json", rl)
 
 	}
-	 t2 := time.Now()
+	t2 := time.Now()
  	fmt.Printf("load data time cost %v\n",t2.Sub(start)) 
 }
 
@@ -140,6 +141,13 @@ func main(){
 
 	//read_dir_IPs(folder_base)
 
-	Output_Json (folder_base)
+	//Output_Json (folder_base)
+
+	date ="2017-01-04"
+	rl := &[]dt.Record{}
+	folder = folder_base + date
+	count = dt.Read_Records_From_Folder(rl, folder) 
+	fmt.Println("rl: ", len(*rl), "; count=",count)
+	dt.Write_json_Array(folder_Ouputs+date+".json", rl)
 
 }
