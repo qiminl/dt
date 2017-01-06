@@ -49,6 +49,10 @@ type RecordList struct{
 	Records []Record
 }
 
+type IP_struct struct{
+	Ip string
+}
+
 var(
 
 	unique_ifa map[string] int
@@ -176,12 +180,48 @@ func Compare_csv(file string, m map[string] int, TAG string) map[string] int{
 }
 
 /*
+ *	compare result to ip data
+ *  @param file absolute path to the csv file.
+ *  @return 	result
+ */
+func Read_from_fraudlogix_csv(file string) map[string]int{
+	
+	var result map[string] int
+	// currunt = make(map[string]int)
+	result = make(map[string]int)
+	// //copy to new
+	// for k,v := range m {
+	//   currunt[k] = v
+	// }
+
+	f, err := os.Open(file)
+    if err != nil {
+        return nil
+    }
+    defer f.Close()
+
+    csvr := csv.NewReader(f)
+    for {
+        row, err := csvr.Read()
+        if err != nil {
+            if err == io.EOF {
+                err = nil
+                println("EOF")
+                return result 
+            }
+        }
+        //println(row[0])
+        result[row[0]] +=1
+    }
+	return result
+}
+
+/*
  *	Read .asb files into JSON format for our portum data structure. 
  *  @param path absolute path to the asb file.
  *	@param rl 	structure of the our data record
  *  @return 	count of record
  */
-
 func Read_Records_From_File(path string, rl *[]Record) int{
 	count := 0
 	//pricing_model := "CPM"
