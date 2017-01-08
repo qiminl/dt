@@ -181,10 +181,10 @@ func Compare_csv(file string, m map[string] int, TAG string) map[string] int{
 
 /*
  *	compare result to ip data
- *  @param file absolute path to the csv file.
+ *  @param folder absolute path to the folder included only csv file.
  *  @return 	result
  */
-func Read_from_fraudlogix_csv(file string) map[string]int{
+func Read_from_fraudlogix_csv(folder string) map[string]int{
 	
 	var result map[string] int
 	// currunt = make(map[string]int)
@@ -193,26 +193,30 @@ func Read_from_fraudlogix_csv(file string) map[string]int{
 	// for k,v := range m {
 	//   currunt[k] = v
 	// }
+	files := GetFilelist(folder)
+	//println(folder, "#file=", len(files))
+	for _,file := range files{
+		f, err := os.Open(file)
+	    if err != nil {
+	        return nil
+	    }
+	    defer f.Close()
 
-	f, err := os.Open(file)
-    if err != nil {
-        return nil
-    }
-    defer f.Close()
-
-    csvr := csv.NewReader(f)
-    for {
-        row, err := csvr.Read()
-        if err != nil {
-            if err == io.EOF {
-                err = nil
-                println("EOF")
-                return result 
-            }
-        }
-        //println(row[0])
-        result[row[0]] +=1
-    }
+	    csvr := csv.NewReader(f)
+	    for {
+	        row, err := csvr.Read()
+	        if err != nil {
+	            if err == io.EOF {
+	                err = nil
+	                println("EOF")
+	                break
+	                //return result 
+	            }
+	        }
+	        //println(row[0])
+	        result[row[0]] +=1
+	    }
+	}
 	return result
 }
 
@@ -410,3 +414,9 @@ func Write_json_Array(path string, rl *[]Record){//m map[string] []dt.Record) {
 
 //testing 
 func Siudiu() int{return 1}
+
+func Print_map(result_map map[string] int ){
+	for k,v := range result_map{
+		fmt.Println("@ ",k," #",v)
+	}
+}
