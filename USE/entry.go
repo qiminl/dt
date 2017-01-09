@@ -14,15 +14,16 @@ import (
 
 var(
 	//fraudlogix_csv = "/Users/edward/Downloads/etoron-result/"
-	fraudlogix_csv ="G:\\work\\src\\dt\\fraudlogix"
-	count int;
-	date = "2016-12-16"
 	//folder_base ="/Users/edward/work/backup/"
-	folder_base ="E:\\backup\\"
 	// folder_Ouputs = "/Users/edward/work/JsonOutputs/"
 	folder_Ouputs ="E:\\backup\\JsonOutputs\\"
-	folder = folder_base+ date
+	folder_base ="E:\\backup\\"
+	fraudlogix_csv ="G:\\work\\src\\dt\\fraudlogix"
 
+	count int;
+	date = "2016-12-16"
+	
+	folder = folder_base+ date
 	line []string 
 )
 
@@ -137,7 +138,12 @@ func Output_Json (dir string){
 }
 
 //search against fraudlogix list. 
-func search_Object (dir string, csv_path string) (map[string] int, map[string] int){
+func search_Object (dir string, csv_path string) {
+
+	var ip_list map[string] int
+	ip_list = make(map[string] int)
+	//get ip list from folder
+	ip_list = dt.Read_from_fraudlogix_csv(csv_path) 
 
 	var result_app map[string] int
 	result_app = make(map[string] int)
@@ -145,10 +151,6 @@ func search_Object (dir string, csv_path string) (map[string] int, map[string] i
 	result_time = make(map[string] int)
 	var result_mac map[string] int
 	result_mac = make(map[string] int)
-
-	var ip_list map[string] int
-	ip_list = make(map[string] int)
-	ip_list = dt.Read_from_fraudlogix_csv(csv_path) //get ip list from folder
 
 	var map_problem_ip_object map[string] []*dt.Record
 	map_problem_ip_object = make(map[string] []*dt.Record)
@@ -162,7 +164,7 @@ func search_Object (dir string, csv_path string) (map[string] int, map[string] i
 		date = f.Name()
     	folder = folder_base+ date
 		count = dt.Read_Records_From_Folder(rl, folder) 
-		fmt.Println("rl: ", len(*rl), "; count=",count)
+		fmt.Println("@~",folder,", rl: ", len(*rl), "; count=",count)
 		//dt.Write_json_Array(folder_Ouputs+date+".json", rl)
 		for _, f := range *rl {
  			//fmt.Println(" rl.ip=", f.Ip)
@@ -183,20 +185,12 @@ func search_Object (dir string, csv_path string) (map[string] int, map[string] i
 	t2 := time.Now()
  	fmt.Printf("load data time cost %v\n",t2.Sub(start)) 
 
- 	f, err := os.Create(path)
-    check(err)
-    defer f.Close()
-    w := bufio.NewWriter(f)
-    //n4, err := w.WriteString(keys)
+	dt.Write_map_FraudLogix(result_mac,csv_path+ "\\result_mac.txt", "@mac="," deals in"+ dir)
+	dt.Write_map_FraudLogix(result_app,csv_path+ "\\result_app.txt", "@AppID="," deals in"+ dir)
+	dt.Write_map_FraudLogix(result_time,csv_path+ "\\result_time.txt", "@time="," deals in"+ dir)
 
-
- 	for k,v := range result_mac{
-		fmt.Println("@ mac=",k," there is #",v," of views&clicks with high risk")
-		ip:="@ mac="+k+" there is #"+v+" of views&clicks with high risk"
-		fmt.Fprintln(w, ip)
-	}
- 	return result_app, result_time
 }
+
 
 func main(){
 
@@ -206,20 +200,8 @@ func main(){
 	//read_dir_IPs(folder_base)
 
 	//Output_Json (folder_base)
-	var result_app map[string] int
-	result_app = make(map[string] int)
-	var result_time map[string] int
-	result_time = make(map[string] int)
-	result_app,result_time = search_Object(folder_base, fraudlogix_csv)
 
-	for k,v := range result_app{
-		fmt.Println("app#id=",k," has #",v," of views&clicks with ",fraudlogix_csv," risk")
-	}
-	for k,v := range result_time{
-		fmt.Println("@ ",k," there is #",v," of views&clicks with high risk")
-	}
-
-
+	search_Object(folder_base, fraudlogix_csv)
 
 	// date ="2017-01-04"
 	// rl := &[]dt.Record{}

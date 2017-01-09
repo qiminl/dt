@@ -11,7 +11,7 @@ import (
     // "sort"
      "io/ioutil"  
     // TT "time"
-    // "strconv"
+     "strconv"
      "encoding/json"
 )
 
@@ -361,7 +361,7 @@ func Read_Records_From_Folder (rl *[]Record, folder string) int{
 	//println(folder, "#file=", len(files))
 	for _,file := range files{
 		count += Read_Records_From_File(file, rl)
-		println(file," with ",count)
+		//println(file," with ",count)
  	}
     return count
 }
@@ -410,6 +410,24 @@ func Write_json_Array(path string, rl *[]Record){//m map[string] []dt.Record) {
 	//     fmt.Printf(w, ip)
 	// }
  //  	return w.Flush()
+}
+
+func Write_map_FraudLogix (result_map map[string] int, file string, 
+	k_description string, v_description string){
+	f, err := os.Create(file)
+ 	if err!=nil{
+ 		panic(err)
+ 	}
+    defer f.Close()
+    fmt.Println(file," created?")
+    w := bufio.NewWriter(f)
+    //n4, err := w.WriteString(keys)
+ 	for k,v := range result_map{
+		//fmt.Println(k_description,k," there is #",v,v_description)
+		ip:=k_description+k+" there is #"+strconv.Itoa(v)+v_description
+		fmt.Fprintln(w, ip)
+	}
+	fmt.Println("Done writing ",file)
 }
 
 //testing 
