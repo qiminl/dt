@@ -11,8 +11,8 @@ import (
 	// "sort"
 	"io/ioutil"
 	// TT "time"
-	// "strconv"
 	"encoding/json"
+	"strconv"
 )
 
 type Test struct {
@@ -187,10 +187,11 @@ func Compare_csv(file string, m map[string]int, TAG string) map[string]int {
 
 /*
  *	compare result to ip data
- *  @param file absolute path to the csv file.
+ *  @param folder absolute path to the folder included only csv file.
  *  @return 	result
  */
-func Read_from_fraudlogix_csv(file string) map[string]int {
+
+func Read_from_fraudlogix_csv(folder string) map[string]int {
 
 	var result map[string]int
 	// currunt = make(map[string]int)
@@ -200,24 +201,29 @@ func Read_from_fraudlogix_csv(file string) map[string]int {
 	//   currunt[k] = v
 	// }
 
-	f, err := os.Open(file)
-	if err != nil {
-		return nil
-	}
-	defer f.Close()
-
-	csvr := csv.NewReader(f)
-	for {
-		row, err := csvr.Read()
+	files := GetFilelist(folder)
+	//println(folder, "#file=", len(files))
+	for _, file := range files {
+		f, err := os.Open(file)
 		if err != nil {
-			if err == io.EOF {
-				err = nil
-				println("EOF")
-				return result
-			}
+			return nil
 		}
-		//println(row[0])
-		result[row[0]] += 1
+		defer f.Close()
+
+		csvr := csv.NewReader(f)
+		for {
+			row, err := csvr.Read()
+			if err != nil {
+				if err == io.EOF {
+					err = nil
+					println("EOF")
+					break
+					//return result
+				}
+			}
+			//println(row[0])
+			result[row[0]] += 1
+		}
 	}
 	return result
 }
@@ -380,7 +386,8 @@ func Read_Records_From_Folder(rl *[]Record, folder string) int {
 	//println(folder, "#file=", len(files))
 	for _, file := range files {
 		count += Read_Records_From_File(file, rl)
-		println(file, " with ", count)
+
+		//println(file," with ",count)
 	}
 	return count
 }
@@ -428,5 +435,29 @@ func Write_json_Array(path string, rl *[]Record) { //m map[string] []dt.Record) 
 	//  	return w.Flush()
 }
 
+func Write_map_FraudLogix(result_map map[string]int, file string,
+	k_description string, v_description string) {
+	f, err := os.Create(file)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	fmt.Println(file, " created?")
+	w := bufio.NewWriter(f)
+	//n4, err := w.WriteString(keys)
+	for k, v := range result_map {
+		//fmt.Println(k_description,k," there is #",v,v_description)
+		ip := k_description + k + " there is #" + strconv.Itoa(v) + v_description
+		fmt.Fprintln(w, ip)
+	}
+	fmt.Println("Done writing ", file)
+}
+
 //testing
 func Siudiu() int { return 1 }
+
+func Print_map(result_map map[string]int) {
+	for k, v := range result_map {
+		fmt.Println("@ ", k, " #", v)
+	}
+}
