@@ -80,7 +80,7 @@ func Write_json_Array(path string, rl *[]Record) { //m map[string] []dt.Record) 
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Date writing to ", path, "\nRecordList.len=", len(*rl))
+	//fmt.Println("Date writing to ", path, "\nRecordList.len=", len(*rl))
 	//fmt.Println(string(RecordList2B))
 	//fmt.Println("#elements :", (*rl)[0].Ip)
 

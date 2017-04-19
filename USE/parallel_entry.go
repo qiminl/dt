@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/goinggo/jobpool"
+	//"github.com/op/go-logging"
 )
 
 type WorkProvider1 struct {
@@ -32,8 +33,6 @@ func (wp *WorkProvider1) RunJob(jobRoutine int) {
 		os.Mkdir(folder_Ouputs+date+"/", os.ModePerm)
 		fmt.Println("created: " + folder_Ouputs + date + "/")
 	}
-	//fmt.Printf("jobRoutine %v : %v record found, dumping file  %s\n", jobRoutine, count, folder_Ouputs+date+"/"+name[len(name)-1]+".json")
-
 	dt.Write_json_Array(folder_Ouputs+date+"/"+file_name+".json", rl)
 
 	t2 := time.Now()
@@ -44,11 +43,6 @@ func (wp *WorkProvider1) RunJob(jobRoutine int) {
 var (
 	folder_base   = "/Users/edward/work/test/"
 	folder_Ouputs = "/Users/edward/work/JsonOutputs/"
-
-	count int
-
-	//folder = folder_base + date
-	line []string
 )
 
 // func each_file(files []string) {
@@ -61,8 +55,7 @@ var (
 // 	}
 // }
 
-func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
+func ReadFolderBase() {
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)
 
 	fmt.Printf("*******> QW: %d AR: %d\n",
@@ -82,6 +75,38 @@ func main() {
 			jobPool.QueueJob("main", &WorkProvider1{file, date}, false)
 		}
 	}
+}
+
+func ReadFolder(folder string) {
+	jobPool := jobpool.New(runtime.NumCPU(), 1000)
+
+	fmt.Printf("*******> QW: %d AR: %d\n",
+		jobPool.QueuedJobs(),
+		jobPool.ActiveRoutines())
+
+	//rl := &[]dt.Record{}
+	absolute_path := strings.Split(folder, "/")
+	date := absolute_path[len(absolute_path)-1]
+
+	files := dt.GetFilelist(folder)
+	fmt.Printf("%s files %v\n", date, len(files))
+
+	for _, file := range files {
+		jobPool.QueueJob("main", &WorkProvider1{file, date}, false)
+	}
+}
+
+func main() {
+
+	// if len(os.Args) == 2 {
+	// 	folder_base = os.Args[1]
+	// 	folder_Ouputs = os.Args[2]
+	// }
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	//ReadFolderBase()
+	ReadFolder("/Users/edward/work/backup/2017-04-17")
 
 	var input string
 	fmt.Scanln(&input)
