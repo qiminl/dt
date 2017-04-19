@@ -119,42 +119,53 @@ func main() {
 	// }
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	//file := "/Users/edward/work/JsonOutputs/2017-04-13/BB9B098D7A2CE06_00000.asb.json"
+	date := "2017-04-13"
+	TrafficList := make(map[string]int) //[]dt.Record)
 
 	//ReadFolderBase()
+	files := dt.GetFilelist(folder_base + date)
+	fmt.Printf("%s files %v\n", date, len(files))
 
-	file := "/Users/edward/work/JsonOutputs/2017-04-13/BB9B098D7A2CE06_00000.asb.json"
-	rl := &dt.RecordList{}
-	configFile, err := os.Open(file)
-	if err != nil {
-		fmt.Println("opening json file", err.Error())
-	}
-	jsonParser := json.NewDecoder(configFile)
-	if err = jsonParser.Decode(&rl); err != nil {
-		fmt.Println("parsing config file", err.Error())
-	}
+	for _, file := range files {
 
-	TrafficList := make(map[string][]dt.Record)
-	for index := range (*rl).Records {
+		rl := &dt.RecordList{}
+		configFile, err := os.Open(file)
+		if err != nil {
+			fmt.Println("opening json file", err.Error())
+		}
+		jsonParser := json.NewDecoder(configFile)
+		if err = jsonParser.Decode(&rl); err != nil {
+			fmt.Println("parsing config file", err.Error())
+		}
 
-		//V Adn, Publisher,  Ad Unit Size requested ad unit size,
-		// App Ad Unit ID, requested OS
-		//Ad Unit Size in Platform,  App Name, App OS,
-		key := "app_id:" + (*rl).Records[index].Campaign.App_id + 
-				",pub_vadn_id:" +  (*rl).Records[index].Campaign.Pub_v_id +
-				",size:" + (*rl).Records[index].User.Size 
-		TrafficList[key] = append(TrafficList[key], (*rl).Records[index])
+		for index := range (*rl).Records {
+
+			//V Adn, Publisher,  Ad Unit Size requested ad unit size,
+			// App Ad Unit ID, requested OS
+			//Ad Unit Size in Platform,  App Name, App OS,
+			key := "pub_vadn_id:" + (*rl).Records[index].Campaign.Pub_v_id +
+				",app_id:" + (*rl).Records[index].Campaign.App_id +
+				",size:" + (*rl).Records[index].User.Size
+			TrafficList[key] += 1 //= append(TrafficList[key], (*rl).Records[index])
+		}
+		fmt.Println("file: %s done", file)
 	}
 
 	for traffic := range TrafficList {
-		result := make(map[string]int)
-		for index := range TrafficList[traffic]{
-			result[traffic+TrafficList[traffic][index].Device.Os_v] +=1
-		}
-		for index_r := range result {
-			fmt.Println("key: ", index_r, "; number:", result[index_r])
-		}
-		
+		fmt.Println("key: ", traffic, "; number:", TrafficList[traffic])
 	}
+
+	// for traffic := range TrafficList {
+	// 	result := make(map[string]int)
+	// 	for index := range TrafficList[traffic] {
+	// 		result[traffic+" size"+TrafficList[traffic][index].User.Size] += 1
+	// 	}
+	// 	for index_r := range result {
+	// 		fmt.Println("key: ", index_r, "; number:", result[index_r])
+	// 	}
+
+	// }
 
 	// for index := range (*rl).Records {
 	// 	key := "app_id:" + (*rl).Records[index].Campaign.App_id + ",size:" + (*rl).Records[index].User.Size
