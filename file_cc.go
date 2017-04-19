@@ -104,6 +104,16 @@ func Write_json_Array(path string, rl *[]Record) { //m map[string] []dt.Record) 
 	//  	return w.Flush()
 }
 
+func Write_json_Array_RL(path string, rl *RecordList) { //m map[string] []dt.Record) {
+
+	RecordList2D := &rl
+	RecordList2B, err := json.MarshalIndent(RecordList2D, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	ioutil.WriteFile(path, RecordList2B, 0644)
+}
+
 func Write_map_FraudLogix(result_map map[string]int, file string,
 	k_description string, v_description string) {
 	f, err := os.Create(file)

@@ -153,7 +153,7 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 				}
 			//ip
 			case line[2] == "os_n" && len(line) > 3 && line[3] != "0":
-				os_v = line[3]
+				os_n = line[3]
 			//os_v
 			case line[2] == "os_v" && len(line) > 4 && line[3] != "0":
 				os_v = line[4]
@@ -187,30 +187,33 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 			// case line[2]== "gender" && len(line)>4 :
 			// 		gender = line[3]
 			//carrier_code
-			case line[2] == "carrier_code" && len(line) > 3:
-				carrier_code = line[3]
+			case line[2] == "carrier_code" && len(line) > 4:
+				carrier_code = line[4]
 
 			//android_ifa
 			case line[2] == "android_ifa" && len(line) > 3:
 				android_ifa = line[3]
 
 			//pub_id
-			case line[2] == "pub_id" && len(line) > 3:
-				pub_id = line[3]
+			case line[2] == "pub_id" && len(line) > 4:
+				pub_id = line[4]
 
 			//pub_v_id
-			case line[2] == "pub_v_id" && len(line) > 3:
-				android_ifa = line[3]
+			case line[2] == "pub_v_id" && len(line) > 4:
+				pub_v_id = line[4]
 
 			//bidder
-			case line[2] == "bidder" && len(line) > 3:
-				bidder = line[3]
+			case line[2] == "bidder" && len(line) > 4:
+				bidder = line[4]
 
 			//cr_type
-			case line[2] == "cr_type" && len(line) > 3:
-				cr_type = line[3]
-			}
+			case line[2] == "cr_type" && len(line) > 4:
+				cr_type = line[4]
 
+			//size
+			case line[2] == "size" && len(line) > 4:
+				size = line[4]
+			}
 			if len(line) >= 5 {
 				name, country, field := line[2], line[3], line[4]
 				if name == "region" && (country == "2" || country == "cn") {
