@@ -2,17 +2,16 @@ package dt
 
 import (
 	"bufio"
-	"encoding/csv"
 	"fmt"
-	"io"
 	"os"
-	"path/filepath"
 	"strings"
+	//"path/filepath"
 	// "sort"
-	"io/ioutil"
+	//"io/ioutil"
 	// TT "time"
-	"encoding/json"
-	"strconv"
+	//"encoding/json"
+	//"strconv"
+	//"io"
 )
 
 type Test struct {
@@ -25,34 +24,24 @@ type TestList struct {
 }
 
 type Record struct {
-	Id            string `json:"id"`
-	Set           string `json:"set"`
-	Time          string `json:"time"`
-	App_id        string `json:"app_id"`
-	Camp_id       string `json:"camp_id"`
-	Ip            string `json:"ip"`
-	Os_n          string `json:"os_v"`
-	Os_v          string `json:"os_v"`
-	Device_id     string `json:"device_id"`
-	Device_mac    string `json:"device_mac"`
-	Device_type   string `json:"device_type"`
-	Device_ifa    string `json:"device_ifa"`
-	City          string `json:"city"`
-	Device_vendor string `json:"device_vendor"`
-	Carrier_code  string `json:"carrier_code"`
-	Android_ifa   string `json:"android_ifa"`
-	Device_model  string `json:"device_model"`
-	Status        string `json:"status"`
-	Ext_id        string `json:"ext_id"`
+
+	//Camp_Struct
+	Campaign Campaign `json:"campaign"`
+
+	//Device_Struct
+	Device Device `json:"device"`
+
+	//User_Struct
+	User User `json:"user"`
 }
 
 type RecordList struct {
 	Records []Record
 }
 
-type IP_struct struct {
-	Ip string
-}
+// type IP_struct struct {
+// 	Ip string
+// }
 
 var (
 	unique_ifa map[string]int
@@ -63,7 +52,7 @@ var (
 	target_app_id = "160"
 	target_set    = "clicks"
 
-	//app_ids = []string{"62","78", "94", "95", "96", "97", "98", "99", "100"}
+	// app_ids = []string{"62","78", "94", "95", "96", "97", "98", "99", "100"}
 	// date = "2016-12-16"
 	// folder_base ="/Users/liuqimin/work/"
 	// folder = folder_base+ date
@@ -77,156 +66,8 @@ func check(e error) {
 	}
 }
 
-/*
- *	get all files in the path.
- *  @param path absolute path
- *  @return []string array of file names.
- */
-func GetFilelist(path string) []string {
-	files := make([]string, 0)
-
-	//var files []string
-	err := filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
-		if f == nil {
-			return err
-		}
-		if f.IsDir() {
-			return nil
-		}
-		//println(path)
-		files = append(files, path)
-		return nil
-	})
-	//println("diu")
-	if err != nil {
-		return nil
-		//fmt.Printf("filepath.Walk() returned %v\n", err)
-	}
-	// for _,file := range files {println(file)}
-	return files
-}
-
-/*
- *	compare result to geo data
- *  @param file absolute path to the csv file.
- *	@param m 	map of key, value of result from asb
- *  @return 	result
- */
-func Compare_csv(file string, m map[string]int, TAG string) map[string]int {
-
-	var currunt, result map[string]int
-	currunt = make(map[string]int)
-	result = make(map[string]int)
-
-	//copy to new
-	for k, v := range m {
-		currunt[k] = v
-	}
-
-	f, err := os.Open(file)
-	if err != nil {
-		return nil
-	}
-	defer f.Close()
-
-	csvr := csv.NewReader(f)
-	for {
-		row, err := csvr.Read()
-		if err != nil {
-			if err == io.EOF {
-				err = nil
-				println("EOF")
-				return result
-			}
-		}
-
-		switch {
-		case TAG == "region":
-
-			if len(row) > 7 && len(currunt) > 0 {
-				for k, v := range currunt {
-					if row[4] == "CN" && row[6] == k {
-						region := row[7]
-						result[region] = v
-						delete(currunt, k)
-						//printMap(result)
-						break
-					}
-				}
-			}
-
-		case TAG == "city":
-			if len(row) > 7 && len(currunt) > 0 {
-				for k, v := range currunt {
-					if row[4] == "CN" && row[0] == k {
-						region := row[10]
-						result[region] = v
-						delete(currunt, k)
-						//printMap(result)
-						break
-					}
-				}
-			}
-
-		case TAG == "os_v":
-			if len(row) > 7 && len(currunt) > 0 {
-				for k, v := range currunt {
-					if row[4] == "CN" && row[0] == k {
-						region := row[10]
-						result[region] = v
-						delete(currunt, k)
-						//printMap(result)
-						break
-					}
-				}
-			}
-		}
-	}
-	return result
-}
-
-/*
- *	compare result to ip data
- *  @param folder absolute path to the folder included only csv file.
- *  @return 	result
- */
-
-func Read_from_fraudlogix_csv(folder string) map[string]int {
-
-	var result map[string]int
-	// currunt = make(map[string]int)
-	result = make(map[string]int)
-	// //copy to new
-	// for k,v := range m {
-	//   currunt[k] = v
-	// }
-
-	files := GetFilelist(folder)
-	//println(folder, "#file=", len(files))
-	for _, file := range files {
-		f, err := os.Open(file)
-		if err != nil {
-			return nil
-		}
-		defer f.Close()
-
-		csvr := csv.NewReader(f)
-		for {
-			row, err := csvr.Read()
-			if err != nil {
-				if err == io.EOF {
-					err = nil
-					println("EOF")
-					break
-					//return result
-				}
-			}
-			//println(row[0])
-			result[row[0]] += 1
-		}
-	}
-	return result
-}
+//testing
+func Siudiu() int { return 1 }
 
 /*
  *	Read .asb files into JSON format for our portum data structure.
@@ -236,10 +77,13 @@ func Read_from_fraudlogix_csv(folder string) map[string]int {
  */
 func Read_Records_From_File(path string, rl *[]Record) int {
 	count := 0
-	//pricing_model := "CPM"
-	var current_set, time, app_id, camp_id, id, ip, device_ifa,
-		os_n, os_v, device_id, device_mac, device_type, city, device_vendor,
-		carrier_code, android_ifa, device_model, status, ext_id string
+
+	//campaign info:
+	var id, set, time, app_id, camp_id, pub_id, pub_v_id, status, ext_id, bidder, cr_type string
+	//user info:
+	var ip, city, android_ifa, size string
+	//device info:
+	var os_n, os_v, device_id, device_mac, device_type, device_ifa, device_vendor, device_model, carrier_code string
 
 	f, err := os.Open(path)
 	if err != nil {
@@ -259,15 +103,22 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 				//time := TT.Unix(i, 0).String()
 				//build a record
 				if head_flag {
-					if status == "yesad" {
-						*rl = append(*rl, Record{Id: id, Set: current_set, Time: time, App_id: app_id,
-							Camp_id: camp_id, Ip: ip, Os_n: os_n, Os_v: os_v, Device_id: device_id,
-							Device_mac: device_mac, Device_type: device_type, Device_ifa: device_ifa, City: city,
-							Device_vendor: device_vendor, Carrier_code: carrier_code, Android_ifa: android_ifa,
-							Device_model: device_model, Status: status, Ext_id: ext_id})
-						device_model = ""
-						count++
-					}
+					//if status == "yesad" {
+					Campaign := &Campaign{Id: id, Set: set, Time: time,
+						App_id: app_id, Camp_id: camp_id, Pub_id: pub_id, Pub_v_id: pub_v_id,
+						Status: status, Ext_id: ext_id, Bidder: bidder, Cr_type: cr_type}
+
+					User := &User{Ip: ip, City: city, Android_ifa: android_ifa, Size: size}
+
+					Device := &Device{Os_n: os_n, Os_v: os_v, Device_id: device_id, Device_mac: device_mac,
+						Device_type: device_type, Device_ifa: device_ifa, Device_vendor: device_vendor,
+						Device_model: device_model, Carrier_code: carrier_code}
+
+					*rl = append(*rl, Record{Campaign: *Campaign, User: *User, Device: *Device})
+
+					device_model = ""
+					count++
+					//}
 				} else {
 					head_flag = true
 				}
@@ -276,7 +127,7 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 			switch {
 			//set
 			case line[0] == "+" && line[1] == "s":
-				current_set = line[2]
+				set = line[2]
 				//set_count[line[2]] += 1
 			//id
 			case line[2] == "id":
@@ -339,9 +190,25 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 			case line[2] == "carrier_code" && len(line) > 3:
 				carrier_code = line[3]
 
-			//carrier_code
+			//android_ifa
 			case line[2] == "android_ifa" && len(line) > 3:
 				android_ifa = line[3]
+
+			//pub_id
+			case line[2] == "pub_id" && len(line) > 3:
+				pub_id = line[3]
+
+			//pub_v_id
+			case line[2] == "pub_v_id" && len(line) > 3:
+				android_ifa = line[3]
+
+			//bidder
+			case line[2] == "bidder" && len(line) > 3:
+				bidder = line[3]
+
+			//cr_type
+			case line[2] == "cr_type" && len(line) > 3:
+				cr_type = line[3]
 			}
 
 			if len(line) >= 5 {
@@ -356,14 +223,21 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 		println(os.Stderr, err)
 	} else if !scanner.Scan() {
 		if head_flag {
-			if status == "yesad" {
-				*rl = append(*rl, Record{Id: id, Set: current_set, Time: time, App_id: app_id,
-					Camp_id: camp_id, Ip: ip, Os_n: os_n, Os_v: os_v, Device_id: device_id,
-					Device_mac: device_mac, Device_type: device_type, Device_ifa: device_ifa, City: city,
-					Device_vendor: device_vendor, Carrier_code: carrier_code, Android_ifa: android_ifa,
-					Device_model: device_model, Status: status, Ext_id: ext_id})
-				count++
-			}
+			//if status == "yesad" {
+			Campaign := &Campaign{Id: id, Set: set, Time: time,
+				App_id: app_id, Camp_id: camp_id, Pub_id: pub_id, Pub_v_id: pub_v_id,
+				Status: id, Ext_id: ext_id, Bidder: bidder, Cr_type: cr_type}
+
+			User := &User{Ip: ip, City: city, Android_ifa: android_ifa, Size: size}
+
+			Device := &Device{Os_n: os_n, Os_v: os_v, Device_id: device_id, Device_mac: device_mac,
+				Device_type: device_type, Device_ifa: device_ifa, Device_vendor: device_vendor,
+				Device_model: device_model, Carrier_code: carrier_code}
+
+			*rl = append(*rl, Record{Campaign: *Campaign, User: *User, Device: *Device})
+
+			count++
+			//}
 		}
 	}
 	// fmt.Println("len:",len(rl))
@@ -371,90 +245,6 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 	//printMap(unique_ifa)
 	return count
 }
-
-/*
- *	Read .asb files into JSON format for our portum data structure.
- *  @param path absolute path to the asb file.
- *	@param rl 	structure of the our data record
- *  @return 	count of record
- */
-func Read_Records_From_Folder(rl *[]Record, folder string) int {
-
-	var count int
-	files := GetFilelist(folder)
-	println("reading from folder : ", folder)
-	//println(folder, "#file=", len(files))
-	for _, file := range files {
-		count += Read_Records_From_File(file, rl)
-
-		//println(file," with ",count)
-	}
-	return count
-}
-
-func Write_Array(path string, IPs []string) error { //m map[string] []dt.Record) {
-	f, err := os.Create(path)
-	check(err)
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	//n4, err := w.WriteString(keys)
-	for _, ip := range IPs {
-		fmt.Fprintln(w, ip)
-	}
-	return w.Flush()
-}
-
-func Write_json_Array(path string, rl *[]Record) { //m map[string] []dt.Record) {
-
-	RecordList2D := &RecordList{*rl}
-	RecordList2B, err := json.MarshalIndent(RecordList2D, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Date writing to ", path, "\nRecordList.len=", len(*rl))
-	//fmt.Println(string(RecordList2B))
-	//fmt.Println("#elements :", (*rl)[0].Ip)
-
-	// if _, err := os.Stat(path); err != nil {
-	// 	if os.IsNotExist(err) {
-	// 		os.Mkdir(path, 0755)
-	// 	} else {
-	// 		println(err)
-	// 	}
-	// }
-	ioutil.WriteFile(path, RecordList2B, 0644)
-
-	// f, err := os.Create(path)
-	//    check(err)
-	//    defer f.Close()
-	//    w := bufio.NewWriter(f)
-	//    //n4, err := w.WriteString(keys)
-	//    for _, ip := range RecordList2B {
-	//     fmt.Printf(w, ip)
-	// }
-	//  	return w.Flush()
-}
-
-func Write_map_FraudLogix(result_map map[string]int, file string,
-	k_description string, v_description string) {
-	f, err := os.Create(file)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	fmt.Println(file, " created?")
-	w := bufio.NewWriter(f)
-	//n4, err := w.WriteString(keys)
-	for k, v := range result_map {
-		//fmt.Println(k_description,k," there is #",v,v_description)
-		ip := k_description + k + " there is #" + strconv.Itoa(v) + v_description
-		fmt.Fprintln(w, ip)
-	}
-	fmt.Println("Done writing ", file)
-}
-
-//testing
-func Siudiu() int { return 1 }
 
 func Print_map(result_map map[string]int) {
 	for k, v := range result_map {

@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	directory = "/Users/edward/aerospike-vm/bu"
+	//directory = "/Users/edward/aerospike-vm/bu"
+	directory = "/Users/edward/work/backup/2017-04-12"
 )
 
 func test_reader(files []string) {
@@ -39,7 +40,5 @@ func test_reader(files []string) {
 }
 
 func main() {
-
 	test_reader(dt.GetFilelist(directory))
-
 }
