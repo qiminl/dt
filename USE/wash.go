@@ -135,21 +135,33 @@ func main() {
 
 	TrafficList := make(map[string][]dt.Record)
 	for index := range (*rl).Records {
-		key := "app_id:" + (*rl).Records[index].Campaign.App_id + ",size:" + (*rl).Records[index].User.Size
+
+		//V Adn, Publisher,  Ad Unit Size requested ad unit size,
+		// App Ad Unit ID, requested OS
+		//Ad Unit Size in Platform,  App Name, App OS,
+		key := "app_id:" + (*rl).Records[index].Campaign.App_id + 
+				",pub_vadn_id:" +  (*rl).Records[index].Campaign.Pub_v_id +
+				",size:" + (*rl).Records[index].User.Size 
 		TrafficList[key] = append(TrafficList[key], (*rl).Records[index])
 	}
 
-	for index := range TrafficList {
-		fmt.Println("key: ", index)
+	for traffic := range TrafficList {
+		result := make(map[string]int)
+		for index := range TrafficList[traffic]{
+			result[traffic+TrafficList[traffic][index].Device.Os_v] +=1
+		}
+		for index_r := range result {
+			fmt.Println("key: ", index_r, "; number:", result[index_r])
+		}
+		
 	}
 
-	for index := range (*rl).Records {
-		key := "app_id:" + (*rl).Records[index].Campaign.App_id + ",size:" + (*rl).Records[index].User.Size
-		TrafficList[key] = append(TrafficList[key], (*rl).Records[index])
-	}
+	// for index := range (*rl).Records {
+	// 	key := "app_id:" + (*rl).Records[index].Campaign.App_id + ",size:" + (*rl).Records[index].User.Size
+	// 	TrafficList[key] = append(TrafficList[key], (*rl).Records[index])
+	// }
 
 	//ReadFolder("/Users/edward/work/backup/2017-04-17")
-
 	var input string
 	fmt.Scanln(&input)
 	fmt.Println("done")
