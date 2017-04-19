@@ -120,7 +120,7 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	//file := "/Users/edward/work/JsonOutputs/2017-04-13/BB9B098D7A2CE06_00000.asb.json"
-	date := "2017-04-13"
+	date := "2017-04-17"
 	TrafficList := make(map[string]int) //[]dt.Record)
 
 	//ReadFolderBase()
@@ -144,16 +144,17 @@ func main() {
 			//V Adn, Publisher,  Ad Unit Size requested ad unit size,
 			// App Ad Unit ID, requested OS
 			//Ad Unit Size in Platform,  App Name, App OS,
-			key := "pub_vadn_id:" + (*rl).Records[index].Campaign.Pub_v_id +
-				",app_id:" + (*rl).Records[index].Campaign.App_id +
-				",size:" + (*rl).Records[index].User.Size
+			key := (*rl).Records[index].Campaign.Pub_v_id + "," +
+				(*rl).Records[index].Campaign.App_id + "," +
+				(*rl).Records[index].User.Size
 			TrafficList[key] += 1 //= append(TrafficList[key], (*rl).Records[index])
 		}
 		fmt.Println("file: %s done", file)
 	}
 
+	fmt.Println("pub_v_id, app_id, size, number")
 	for traffic := range TrafficList {
-		fmt.Println("key: ", traffic, "; number:", TrafficList[traffic])
+		fmt.Println(traffic, ",", TrafficList[traffic])
 	}
 
 	// for traffic := range TrafficList {
