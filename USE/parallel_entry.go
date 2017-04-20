@@ -45,15 +45,6 @@ var (
 	folder_Ouputs = "/Users/edward/work/JsonOutputs/"
 )
 
-// func each_file(files []string) {
-// 	fmt.Printf("hmmm?")
-// 	for _, file := range files {
-// 		println("file=", file)
-// 		rl := &[]dt.Record{}
-// 		file_rw(file, rl)
-// 		//fmt.Println("rl: ", len(*rl))
-// 	}
-// }
 
 func ReadFolderBase() {
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)

@@ -4,7 +4,7 @@ import (
 	dt "dt"
 	"fmt"
 	"os"
-	//"strconv"
+	"strconv"
 	"encoding/json"
 	"io/ioutil"
 	"runtime"
@@ -15,42 +15,155 @@ import (
 	//"github.com/op/go-logging"
 )
 
+var (
+	folder_Ouputs = "/Users/admin/work/WASH/"
+	folder_base   = "/Users/admin/work/test"
+	folder_Ouputs_no_os = "/Users/admin/work/WASH_no_os/"
+	os_flag = false
+)
+
 type WorkProvider1 struct {
 	File string
 	Date string
 }
 
-func (wp *WorkProvider1) RunJob(jobRoutine int) {
-	file := wp.File
-	start := time.Now()
+type FolderReader struct {
+	Folder string
+	Date string
+}
 
-	rl := &dt.RecordList{}
-	configFile, err := os.Open(file)
-	if err != nil {
-		fmt.Println("opening json file", err.Error())
-	}
-	jsonParser := json.NewDecoder(configFile)
-	if err = jsonParser.Decode(&rl); err != nil {
-		fmt.Println("parsing config file", err.Error())
-	}
+
+func (wp *FolderReader) RunJob(jobRoutine int) {
+
+	start := time.Now()
+	fmt.Printf("start:", wp.Folder )
 
 	TrafficList := make(map[string][]dt.Record)
-	for index := range (*rl).Records {
-		TrafficList[(*rl).Records[index].Campaign.App_id] = append(TrafficList[(*rl).Records[index].Campaign.App_id], (*rl).Records[index])
+	//ReadFolderBase()
+	files := dt.GetFilelist(wp.Folder)
+	fmt.Printf("%s files %v\n", wp.Date, len(files))
+
+	for _, file := range files {
+
+		rl := &dt.RecordList{}
+		configFile, err := os.Open(file)
+		if err != nil {
+			fmt.Println("opening json file", err.Error())
+		}
+		jsonParser := json.NewDecoder(configFile)
+		if err = jsonParser.Decode(&rl); err != nil {
+			fmt.Println("parsing config file", err.Error())
+		}
+
+		for index := range (*rl).Records {
+
+			//V Adn, Publisher,  Ad Unit Size requested ad unit size,
+			// App Ad Unit ID, requested OS
+			//Ad Unit Size in Platform,  App Name, App OS,
+			key := (*rl).Records[index].Campaign.Pub_v_id + "," + 
+				(*rl).Records[index].Campaign.App_id + "," + 
+				(*rl).Records[index].User.Size
+			TrafficList[key] = append(TrafficList[key], (*rl).Records[index]) //+= 1 //
+		}
+		fmt.Println("file: %s done", wp.Folder)
 	}
 
-	// absolute_path := strings.Split(file, "/")
-	// ExportJson(absolute_path, rl)
 
+	
+
+	if (os_flag){
+		path := folder_Ouputs + wp.Date
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+		    os.Create(path)
+		}
+		f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+		    panic(err)
+		}
+
+		defer f.Close()
+
+		//fmt.Println("pub_v_id, app_id, size")
+		for traffic := range TrafficList {
+			heads := strings.Split(traffic, ",")
+			//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
+			//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
+			if _, err = f.WriteString("\n"+heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ strconv.Itoa(len(TrafficList[traffic]))); err != nil {
+			    panic(err)
+			}
+			os_map := make (map [string]int)
+			//fmt.Println(TrafficList[traffic][0].Device.Os_v)
+			for index := range TrafficList[traffic]{
+				key := TrafficList[traffic][index].Device.Os_n + " + " + TrafficList[traffic][index].Device.Os_v 
+				os_map[key] +=1
+			}
+			for index2 := range os_map{
+				//fmt.Println("\tos: ",index2, " = ", os_map[index2])
+				//word :="\tos: "+index2+ " = "+ os_map[index2]
+				if _, err = f.WriteString("\tos: "+index2+ " = "+ strconv.Itoa(os_map[index2]) + "\n"); err != nil {
+			    panic(err)
+			}
+			}
+
+		}
+	} else {
+
+		path := folder_Ouputs_no_os + wp.Date + ".csv"
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+		    os.Create(path)
+		}
+		f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+		    panic(err)
+		}
+		defer f.Close()
+
+			//fmt.Println("pub_v_id, app_id, size")
+		if _, err = f.WriteString("pub_v_id, app_id, size, number"); err != nil {
+		    panic(err)
+		}
+		for traffic := range TrafficList {
+			heads := strings.Split(traffic, ",")
+			//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
+			//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
+			if _, err = f.WriteString("\n"+heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ ", "+ strconv.Itoa(len(TrafficList[traffic]))); err != nil {
+			    panic(err)
+			}
+			// os_map := make (map [string]int)
+			// //fmt.Println(TrafficList[traffic][0].Device.Os_v)
+			// for index := range TrafficList[traffic]{
+			// 	key := TrafficList[traffic][index].Device.Os_n + " + " + TrafficList[traffic][index].Device.Os_v 
+			// 	os_map[key] +=1
+			// }
+			// for index2 := range os_map{
+			// 	//fmt.Println("\tos: ",index2, " = ", os_map[index2])
+			// 	//word :="\tos: "+index2+ " = "+ os_map[index2]
+			// 	if _, err = f.WriteString("\tos: "+index2+ " = "+ strconv.Itoa(os_map[index2]) + "\n"); err != nil {
+			// 	    panic(err)
+			// 	}
+			// }
+		}
+	}
+	//ioutil.WriteFile(path, RecordList2B, 0644)
 	t2 := time.Now()
-	fmt.Printf("Date:%s :rw file %s took %v\n", wp.Date, wp.File, t2.Sub(start))
+	fmt.Printf("Date:%s :rw file %s took %v\n", wp.Date, wp.Folder, t2.Sub(start))
 
 }
 
-var (
-	folder_Ouputs = "/Users/edward/work/WASH/"
-	folder_base   = "/Users/edward/work/JsonOutputs/"
-)
+func ReadFolderWash(folder string) {
+	jobPool := jobpool.New(runtime.NumCPU(), 1000)
+
+	all_date, _ := ioutil.ReadDir(folder)
+	fmt.Println("Reading DIR=", folder)
+	for i := len(all_date) - 1; i >= 0; i-- {
+		f := all_date[i]
+		//for _, f := range all_date {
+		//rl := &[]dt.Record{}
+		date := f.Name()
+		//fmt.Println("folder name = ", folder+"/"+date)
+		jobPool.QueueJob("main", &FolderReader{folder+"/"+date, date}, false)
+	}
+}
 
 // func each_file(files []string) {
 // 	fmt.Printf("hmmm?")
@@ -111,6 +224,34 @@ func ReadFolder(folder string) {
 	}
 }
 
+func (wp *WorkProvider1) RunJob(jobRoutine int) {
+	file := wp.File
+	start := time.Now()
+
+	rl := &dt.RecordList{}
+	configFile, err := os.Open(file)
+	if err != nil {
+		fmt.Println("opening json file", err.Error())
+	}
+	jsonParser := json.NewDecoder(configFile)
+	if err = jsonParser.Decode(&rl); err != nil {
+		fmt.Println("parsing config file", err.Error())
+	}
+
+	TrafficList := make(map[string][]dt.Record)
+	for index := range (*rl).Records {
+		TrafficList[(*rl).Records[index].Campaign.App_id] = append(TrafficList[(*rl).Records[index].Campaign.App_id], (*rl).Records[index])
+	}
+
+	// absolute_path := strings.Split(file, "/")
+	// ExportJson(absolute_path, rl)
+
+	t2 := time.Now()
+	fmt.Printf("Date:%s :rw file %s took %v\n", wp.Date, wp.File, t2.Sub(start))
+
+}
+
+
 func main() {
 
 	// if len(os.Args) == 2 {
@@ -119,62 +260,16 @@ func main() {
 	// }
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	//file := "/Users/edward/work/JsonOutputs/2017-04-13/BB9B098D7A2CE06_00000.asb.json"
-	date := "2017-04-17"
-	TrafficList := make(map[string]int) //[]dt.Record)
 
-	//ReadFolderBase()
-	files := dt.GetFilelist(folder_base + date)
-	fmt.Printf("%s files %v\n", date, len(files))
-
-	for _, file := range files {
-
-		rl := &dt.RecordList{}
-		configFile, err := os.Open(file)
-		if err != nil {
-			fmt.Println("opening json file", err.Error())
-		}
-		jsonParser := json.NewDecoder(configFile)
-		if err = jsonParser.Decode(&rl); err != nil {
-			fmt.Println("parsing config file", err.Error())
-		}
-
-		for index := range (*rl).Records {
-
-			//V Adn, Publisher,  Ad Unit Size requested ad unit size,
-			// App Ad Unit ID, requested OS
-			//Ad Unit Size in Platform,  App Name, App OS,
-			key := (*rl).Records[index].Campaign.Pub_v_id + "," +
-				(*rl).Records[index].Campaign.App_id + "," +
-				(*rl).Records[index].User.Size
-			TrafficList[key] += 1 //= append(TrafficList[key], (*rl).Records[index])
-		}
-		fmt.Println("file: %s done", file)
-	}
-
-	fmt.Println("pub_v_id, app_id, size, number")
-	for traffic := range TrafficList {
-		fmt.Println(traffic, ",", TrafficList[traffic])
-	}
-
-	// for traffic := range TrafficList {
-	// 	result := make(map[string]int)
-	// 	for index := range TrafficList[traffic] {
-	// 		result[traffic+" size"+TrafficList[traffic][index].User.Size] += 1
-	// 	}
-	// 	for index_r := range result {
-	// 		fmt.Println("key: ", index_r, "; number:", result[index_r])
-	// 	}
-
-	// }
-
-	// for index := range (*rl).Records {
-	// 	key := "app_id:" + (*rl).Records[index].Campaign.App_id + ",size:" + (*rl).Records[index].User.Size
-	// 	TrafficList[key] = append(TrafficList[key], (*rl).Records[index])
-	// }
+	//with os
+	ReadFolderWash(folder_base)
 
 	//ReadFolder("/Users/edward/work/backup/2017-04-17")
+
 	var input string
 	fmt.Scanln(&input)
 	fmt.Println("done")
 }
+
+
+

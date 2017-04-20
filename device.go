@@ -12,3 +12,5 @@ type Device struct {
 	Device_model  string `json:"device_model"`
 	Carrier_code  string `json:"carrier_code"`
 }
+
+
