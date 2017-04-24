@@ -85,7 +85,7 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 	var ip, city, android_ifa, size, lat, lon string
 	//device info:
 	var os_n, os_v, device_id, device_mac, device_type, device_ifa, device_vendor, device_model, carrier_code string
-	var ios_ifa, android_id, conn_type, device_pid string
+	var ios_ifa, android_id, conn_type, device_pid, operator string
 
 	f, err := os.Open(path)
 	if err != nil {
@@ -141,19 +141,18 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 					ip = line[4]
 				} else {
 					ip = line[3]
-				}n
+				}
 			//city
 			case line[2] == "city" && len(line) > 4:
 				city = line[4]
-			}
 			//size
 			case line[2] == "size" && len(line) > 4:
 				size = line[4]
-			}
+
 			//location
 			case line[2] == "lat" && len(line) > 4:
 				size = line[4]
-			}
+
 			case line[2] == "lon" && len(line) > 4:
 				size = line[4]
 
@@ -212,7 +211,7 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 				//adv_v_id
 			case line[2] == "adv_v_id" && len(line) > 4:
 				adv_v_id = line[4]
-			
+
 			/**
 			device struct
 			*/
@@ -266,6 +265,7 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 				//operator
 			case line[2] == "operator" && len(line) > 4:
 				operator = line[4]
+			}
 
 		}
 	}
