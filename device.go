@@ -16,4 +16,5 @@ type Device struct {
 	Android_id    string `json:"android_id"`
 	Conn_type     string `json:"conn_type"`
 	Device_pid    string `json:"device_pid"`
+	operator 	  string `json:"operator"`
 }
