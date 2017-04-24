@@ -32,12 +32,32 @@ type FolderReader struct {
 	Date   string
 }
 
+type TrafficRatio struct {
+	Counter int             `json:"counter"`
+
+	Conn_type  int `json:"conn_type"`
+	Carrier_code int `json:"carrier_code"`
+	Operator int `json:"operator"`
+
+	Device_mac   int `json:"device_mac"`
+	Device_type	int `json:"device_type"`
+	Device_ifa int `json:"device_ifa"`
+	Ios_ifa int `json:"ios_ifa"`
+	Android_id int `json:"android_id"`
+
+	Status int `json:"status"`
+
+	Smaato int `json:"smaato"`
+	VoiceAd int `json:"voicead"`
+
+}
+
 func (wp *FolderReader) RunJob(jobRoutine int) {
 
 	start := time.Now()
 	fmt.Printf("start:", wp.Folder)
 
-	TrafficList := make(map[string]int) //[]dt.Record)
+	TrafficList := make(map[string] TrafficRatio)// int) //[]dt.Record)
 	//ReadFolderBase()
 	files := dt.GetFilelist(wp.Folder)
 	fmt.Printf("%s files %v\n", wp.Date, len(files))
@@ -62,7 +82,9 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 			key := (*rl).Records[index].Campaign.Pub_v_id + "," +
 				(*rl).Records[index].Campaign.App_id + "," +
 				(*rl).Records[index].User.Size
-			TrafficList[key] += 1 // = append(TrafficList[key], (*rl).Records[index]) //
+			value := TrafficRatio {}
+			//TrafficList[key] += 1 // = append(TrafficList[key], (*rl).Records[index]) //
+			TrafficList[key] = value
 		}
 		fmt.Println("file: %s done", wp.Folder)
 	}
