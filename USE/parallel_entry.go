@@ -41,8 +41,9 @@ func (wp *WorkProvider1) RunJob(jobRoutine int) {
 }
 
 var (
-	folder_base   = "/Users/edward/work/backup/"
-	folder_Ouputs = "/Users/edward/work/JsonOutputs/"
+	folder_base = "/Users/edward/work/backup/"
+	//folder_Ouputs = "/Users/edward/work/JsonOutputs/"
+	folder_Ouputs = "/Users/edward/work/JsonOutputsTest/"
 )
 
 func ReadFolderBase() {
@@ -52,7 +53,11 @@ func ReadFolderBase() {
 		jobPool.QueuedJobs(),
 		jobPool.ActiveRoutines())
 
-	all_date, _ := ioutil.ReadDir(folder_base)
+	//all_date, _ := ioutil.ReadDir(folder_base)
+
+	all_date := make([]string, 0)
+	files = append(files, "/Users/edward/work/backup/2017-04-17")
+	files = append(files, "/Users/edward/work/backup/2017-04-16")
 	fmt.Println("Reading DIR=", folder_base)
 	for i := len(all_date) - 1; i >= 0; i-- {
 		f := all_date[i]

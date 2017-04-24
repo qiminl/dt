@@ -17,6 +17,7 @@ var (
 	fraudlogix_csv = "/Users/edward/Downloads/etoron-result/"
 	folder_base    = "/Users/edward/work/backup/"
 	folder_Ouputs  = "/Users/edward/work/JsonOutputs/"
+	//folder_Ouputs = "/Users/edward/work/JsonOutputsTest/"
 	// folder_Ouputs  = "E:\\backup\\JsonOutputs\\"
 	// folder_base    = "E:\\backup\\"
 	// fraudlogix_csv = "G:\\work\\src\\dt\\fraudlogix"
