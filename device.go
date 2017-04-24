@@ -11,6 +11,9 @@ type Device struct {
 	Device_vendor string `json:"device_vendor"`
 	Device_model  string `json:"device_model"`
 	Carrier_code  string `json:"carrier_code"`
+	Conn_type     string `json:"conn_type"`
+	Ios_ifa       string `json:"ios_ifa"`
+	Android_id    string `json:"android_id"`
+	Conn_type     string `json:"conn_type"`
+	Device_pid    string `json:"device_pid"`
 }
-
-

@@ -45,7 +45,6 @@ var (
 	folder_Ouputs = "/Users/edward/work/JsonOutputs/"
 )
 
-
 func ReadFolderBase() {
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)
 
