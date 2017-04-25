@@ -133,7 +133,7 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 			User struct
 			*/
 			//android_ifa
-			case line[2] == "android_ifa" && len(line) > 3:
+			case line[2] == "android_ifa" && len(line) > 4:
 				android_ifa = line[4]
 			//ip
 			case line[2] == "ip":
@@ -264,7 +264,9 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 				device_pid = line[4]
 				//operator
 			case line[2] == "operator" && len(line) > 4:
-				operator = line[4]
+				for loo := 3; loo < len(line); loo++ {
+					operator += line[loo]
+				}
 			}
 
 		}

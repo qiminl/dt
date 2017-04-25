@@ -2,6 +2,7 @@ package main
 
 import (
 	dt "dt"
+	//"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -17,8 +18,8 @@ import (
 
 var (
 	folder_Ouputs       = "/Users/edward/work/WASH/"
-	folder_base         = "/Users/edward/work/JsonOutputs"
-	folder_Ouputs_no_os = "/Users/edward/work/WASH_no_os/"
+	folder_base         = "/Users/edward/work/JsonOutputsTest"
+	folder_Ouputs_no_os = "/Users/edward/work/WASH_no_os_test/"
 	//os_flag             = false
 )
 
@@ -33,23 +34,21 @@ type FolderReader struct {
 }
 
 type TrafficRatio struct {
-	Counter int             `json:"counter"`
+	Counter int `json:"counter"`
 
-	Conn_type  int `json:"conn_type"`
+	Conn_type    int `json:"conn_type"`
 	Carrier_code int `json:"carrier_code"`
-	Operator int `json:"operator"`
+	Operator     int `json:"operator"`
 
-	Device_mac   int `json:"device_mac"`
-	Device_type	int `json:"device_type"`
-	Device_ifa int `json:"device_ifa"`
-	Ios_ifa int `json:"ios_ifa"`
-	Android_id int `json:"android_id"`
+	Device_mac  int `json:"device_mac"`
+	Device_type int `json:"device_type"`
+	Device_ifa  int `json:"device_ifa"`
+	Ios_ifa     int `json:"ios_ifa"`
+	Android_id  int `json:"android_id"`
 
-	Status int `json:"status"`
-
-	Smaato int `json:"smaato"`
+	Status  int `json:"status"`
+	Smaato  int `json:"smaato"`
 	VoiceAd int `json:"voicead"`
-
 }
 
 func (wp *FolderReader) RunJob(jobRoutine int) {
@@ -57,7 +56,7 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 	start := time.Now()
 	fmt.Printf("start:", wp.Folder)
 
-	TrafficList := make(map[string] TrafficRatio)// int) //[]dt.Record)
+	TrafficList := make(map[string]*TrafficRatio) // int) //[]dt.Record)
 	//ReadFolderBase()
 	files := dt.GetFilelist(wp.Folder)
 	fmt.Printf("%s files %v\n", wp.Date, len(files))
@@ -82,50 +81,84 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 			key := (*rl).Records[index].Campaign.Pub_v_id + "," +
 				(*rl).Records[index].Campaign.App_id + "," +
 				(*rl).Records[index].User.Size
-			value := TrafficRatio {}
 			//TrafficList[key] += 1 // = append(TrafficList[key], (*rl).Records[index]) //
-			TrafficList[key] = value
+			//value := TrafficList[key]
+			TrafficList[key].Counter++
+			if (*rl).Records[index].Device.Conn_type != "Unknown" {
+				TrafficList[key].Conn_type++
+			}
+			if (*rl).Records[index].Device.Carrier_code != "Unknown" {
+				TrafficList[key].Carrier_code++
+			}
+			if (*rl).Records[index].Device.Operator != "Unknown" {
+				TrafficList[key].Operator++
+			}
+			if (*rl).Records[index].Device.Device_mac != "" {
+				TrafficList[key].Device_mac++
+			}
+			if (*rl).Records[index].Device.Device_type != "Unknown" {
+				TrafficList[key].Device_type++
+			}
+			if (*rl).Records[index].Device.Device_ifa != "" {
+				TrafficList[key].Device_ifa++
+			}
+			if (*rl).Records[index].Device.Ios_ifa != "" {
+				TrafficList[key].Ios_ifa++
+			}
+			if (*rl).Records[index].Device.Android_id != "" {
+				TrafficList[key].Android_id++
+			}
+			if (*rl).Records[index].Campaign.Status != "noad" {
+				TrafficList[key].Status++
+			}
+			if (*rl).Records[index].Campaign.Bidder == "smaato" {
+				TrafficList[key].Smaato++
+			}
+			if (*rl).Records[index].Campaign.Bidder == "voicead" {
+				TrafficList[key].VoiceAd++
+			}
+			//TrafficList[key]
 		}
 		fmt.Println("file: %s done", wp.Folder)
 	}
+	/*
+		if os_flag {
+			path := folder_Ouputs + wp.Date
+			if _, err := os.Stat(path); os.IsNotExist(err) {
+				os.Create(path)
+			}
+			f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
+			if err != nil {
+				panic(err)
+			}
 
-	// if os_flag {
-	// 	path := folder_Ouputs + wp.Date
-	// 	if _, err := os.Stat(path); os.IsNotExist(err) {
-	// 		os.Create(path)
-	// 	}
-	// 	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
+			defer f.Close()
 
-	// 	defer f.Close()
+			//fmt.Println("pub_v_id, app_id, size")
+			for traffic := range TrafficList {
+				heads := strings.Split(traffic, ",")
+				//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
+				//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
+				if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + " = " + strconv.Itoa(len(TrafficList[traffic]))); err != nil {
+					panic(err)
+				}
+				os_map := make(map[string]int)
+				//fmt.Println(TrafficList[traffic][0].Device.Os_v)
+				for index := range TrafficList[traffic] {
+					key := TrafficList[traffic][index].Device.Os_n + " + " + TrafficList[traffic][index].Device.Os_v
+					os_map[key] += 1
+				}
+				for index2 := range os_map {
+					//fmt.Println("\tos: ",index2, " = ", os_map[index2])
+					//word :="\tos: "+index2+ " = "+ os_map[index2]
+					if _, err = f.WriteString("\tos: " + index2 + " = " + strconv.Itoa(os_map[index2]) + "\n"); err != nil {
+						panic(err)
+					}
+				}
 
-	// 	//fmt.Println("pub_v_id, app_id, size")
-	// 	for traffic := range TrafficList {
-	// 		heads := strings.Split(traffic, ",")
-	// 		//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
-	// 		//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
-	// 		if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + " = " + strconv.Itoa(len(TrafficList[traffic]))); err != nil {
-	// 			panic(err)
-	// 		}
-	// 		os_map := make(map[string]int)
-	// 		//fmt.Println(TrafficList[traffic][0].Device.Os_v)
-	// 		for index := range TrafficList[traffic] {
-	// 			key := TrafficList[traffic][index].Device.Os_n + " + " + TrafficList[traffic][index].Device.Os_v
-	// 			os_map[key] += 1
-	// 		}
-	// 		for index2 := range os_map {
-	// 			//fmt.Println("\tos: ",index2, " = ", os_map[index2])
-	// 			//word :="\tos: "+index2+ " = "+ os_map[index2]
-	// 			if _, err = f.WriteString("\tos: " + index2 + " = " + strconv.Itoa(os_map[index2]) + "\n"); err != nil {
-	// 				panic(err)
-	// 			}
-	// 		}
-
-	// 	}
-	// } else {
-
+			}
+		} else {
+	*/
 	path := folder_Ouputs_no_os + wp.Date + ".csv"
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		os.Create(path)
@@ -136,15 +169,18 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 	}
 	defer f.Close()
 
-	//fmt.Println("pub_v_id, app_id, size")
-	if _, err = f.WriteString("pub_v_id, app_id, size, number, date"); err != nil {
-		panic(err)
-	}
+	// if _, err = f.WriteString("pub_v_id, app_id, size, number, date"); err != nil {
+	// 	panic(err)
+	// }
 	for traffic := range TrafficList {
 		heads := strings.Split(traffic, ",")
 		//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
 		//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
-		if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic]) + ", " + wp.Date); err != nil {
+		//if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic]) + ", " + wp.Date); err != nil {
+		if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " +
+			strconv.Itoa(TrafficList[traffic].Android_id) + ", " + strconv.Itoa(TrafficList[traffic].Carrier_code) + ", " +
+			strconv.Itoa(TrafficList[traffic].Conn_type) + ", " + strconv.Itoa(TrafficList[traffic].Smaato) + ", " +
+			strconv.Itoa(TrafficList[traffic].VoiceAd)); err != nil {
 			panic(err)
 		}
 	}
