@@ -61,20 +61,20 @@ func ReadFolderBase() {
 	}
 
 	files3 := dt.GetFilelist("/Users/edward/work/backup/2017-04-15")
-	fmt.Printf("%s files %v\n", "2017-04-16", len(files2))
-	for _, file := range files2 {
+	fmt.Printf("%s files %v\n", "2017-04-16", len(files3))
+	for _, file := range files3 {
 		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-15"}, false)
 	}
 
 	files4 := dt.GetFilelist("/Users/edward/work/backup/2017-04-22")
-	fmt.Printf("%s files %v\n", "2017-04-16", len(files2))
-	for _, file := range files2 {
+	fmt.Printf("%s files %v\n", "2017-04-16", len(files4))
+	for _, file := range files4 {
 		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-22"}, false)
 	}
 
 	files5 := dt.GetFilelist("/Users/edward/work/backup/2017-04-12")
-	fmt.Printf("%s files %v\n", "2017-04-16", len(files2))
-	for _, file := range files2 {
+	fmt.Printf("%s files %v\n", "2017-04-16", len(files5))
+	for _, file := range files5 {
 		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-12"}, false)
 	}
 

@@ -185,9 +185,9 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 		//if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic]) + ", " + wp.Date); err != nil {
 		total := TrafficList[traffic].Counter
 		if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic].Counter) + ", " +
-			strconv.FormatFloat(float64(TrafficList[traffic].Android_id/total), 'f', 3, 64) + ", " + strconv.FormatFloat(float64(TrafficList[traffic].Carrier_code/total), 'f', 3, 64) + ", " +
-			strconv.FormatFloat(float64(TrafficList[traffic].Conn_type/total), 'f', 3, 64) + ", " + strconv.FormatFloat(float64(TrafficList[traffic].Smaato/total), 'f', 3, 64) + ", " +
-			strconv.FormatFloat(float64(TrafficList[traffic].VoiceAd/total), 'f', 3, 64)); err != nil {
+			strconv.FormatFloat(float64(TrafficList[traffic].Android_id), 'f', 3, 64) + ", " + strconv.FormatFloat(float64(TrafficList[traffic].Carrier_code/total), 'f', 3, 64) + ", " +
+			strconv.FormatFloat(float64(TrafficList[traffic].Conn_type), 'f', 3, 64) + ", " + strconv.FormatFloat(float64(TrafficList[traffic].Smaato), 'f', 3, 64) + ", " +
+			strconv.FormatFloat(float64(TrafficList[traffic].VoiceAd), 'f', 3, 64)); err != nil {
 			panic(err)
 		}
 	}
