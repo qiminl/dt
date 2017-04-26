@@ -18,9 +18,11 @@ import (
 
 var (
 	folder_Ouputs       = "/Users/edward/work/WASH/"
-	folder_base         = "/Users/edward/work/ttt"
+	folder_base         = "/Users/edward/work/wash"
 	folder_Ouputs_no_os = "/Users/edward/work/WASH_no_os_test/"
 	//os_flag             = false
+
+	jobPool = jobpool.New(runtime.NumCPU(), 1000)
 )
 
 type WorkProvider1 struct {
@@ -173,30 +175,34 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 	}
 	defer f.Close()
 
-	// if _, err = f.WriteString("pub_v_id, app_id, size, number, date"); err != nil {
-	// 	panic(err)
-	// }
+	if _, err = f.WriteString("pub_v_id, app_id, size, Counter, validAndroidId% , validCarrier_code%, validConn_type%, Smaato%, VoiceAd%"); err != nil {
+		panic(err)
+	}
 	for traffic := range TrafficList {
 		heads := strings.Split(traffic, ",")
 		//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
 		//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
 		//if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic]) + ", " + wp.Date); err != nil {
+		total := TrafficList[traffic].Counter
 		if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic].Counter) + ", " +
-			strconv.Itoa(TrafficList[traffic].Android_id) + ", " + strconv.Itoa(TrafficList[traffic].Carrier_code) + ", " +
-			strconv.Itoa(TrafficList[traffic].Conn_type) + ", " + strconv.Itoa(TrafficList[traffic].Smaato) + ", " +
-			strconv.Itoa(TrafficList[traffic].VoiceAd)); err != nil {
+			strconv.FormatFloat(float64(TrafficList[traffic].Android_id/total), 'f', 3, 64) + ", " + strconv.FormatFloat(float64(TrafficList[traffic].Carrier_code/total), 'f', 3, 64) + ", " +
+			strconv.FormatFloat(float64(TrafficList[traffic].Conn_type/total), 'f', 3, 64) + ", " + strconv.FormatFloat(float64(TrafficList[traffic].Smaato/total), 'f', 3, 64) + ", " +
+			strconv.FormatFloat(float64(TrafficList[traffic].VoiceAd/total), 'f', 3, 64)); err != nil {
 			panic(err)
 		}
 	}
 	//}
 	//ioutil.WriteFile(path, RecordList2B, 0644)
 	t2 := time.Now()
-	fmt.Printf("Date:%s :rw file %s took %v\n", wp.Date, wp.Folder, t2.Sub(start))
+	fmt.Printf("Date:%s :output %s took %v\n", wp.Date, path, t2.Sub(start))
+	fmt.Printf("*******> QW: %d AR: %d CPU:%d\n",
+		jobPool.QueuedJobs(),
+		jobPool.ActiveRoutines(),
+		runtime.NumCPU())
 
 }
 
 func ReadFolderWash(folder string) {
-	jobPool := jobpool.New(runtime.NumCPU(), 1000)
 
 	all_date, _ := ioutil.ReadDir(folder)
 	fmt.Println("Reading DIR=", folder)
@@ -207,11 +213,8 @@ func ReadFolderWash(folder string) {
 		date := f.Name()
 		//fmt.Println("folder name = ", folder+"/"+date)
 		jobPool.QueueJob("main", &FolderReader{folder + "/" + date, date}, false)
+
 	}
-	fmt.Printf("*******> QW: %d AR: %d CPU:%d\n",
-		jobPool.QueuedJobs(),
-		jobPool.ActiveRoutines(),
-		runtime.NumCPU())
 }
 
 func ExportJson(absolute_path []string, rl *dt.RecordList) {

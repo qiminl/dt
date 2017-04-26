@@ -49,10 +49,6 @@ var (
 func ReadFolderBase() {
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)
 
-	fmt.Printf("*******> QW: %d AR: %d\n",
-		jobPool.QueuedJobs(),
-		jobPool.ActiveRoutines())
-
 	files1 := dt.GetFilelist("/Users/edward/work/backup/2017-04-17")
 	fmt.Printf("%s files %v\n", "2017-04-17", len(files1))
 	for _, file := range files1 {
@@ -62,6 +58,24 @@ func ReadFolderBase() {
 	fmt.Printf("%s files %v\n", "2017-04-16", len(files2))
 	for _, file := range files2 {
 		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-16"}, false)
+	}
+
+	files3 := dt.GetFilelist("/Users/edward/work/backup/2017-04-15")
+	fmt.Printf("%s files %v\n", "2017-04-16", len(files2))
+	for _, file := range files2 {
+		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-15"}, false)
+	}
+
+	files4 := dt.GetFilelist("/Users/edward/work/backup/2017-04-22")
+	fmt.Printf("%s files %v\n", "2017-04-16", len(files2))
+	for _, file := range files2 {
+		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-22"}, false)
+	}
+
+	files5 := dt.GetFilelist("/Users/edward/work/backup/2017-04-12")
+	fmt.Printf("%s files %v\n", "2017-04-16", len(files2))
+	for _, file := range files2 {
+		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-12"}, false)
 	}
 
 	// all_date, _ := ioutil.ReadDir(folder_base)
