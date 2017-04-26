@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	//"strconv"
-	"io/ioutil"
+	//"io/ioutil"
 	"runtime"
 	"strings"
 	"time"
@@ -41,19 +41,10 @@ func (wp *WorkProvider1) RunJob(jobRoutine int) {
 }
 
 var (
-	folder_base   = "/Users/edward/work/backup/"
-	folder_Ouputs = "/Users/edward/work/JsonOutputs/"
+	folder_base = "/Users/edward/work/backup/"
+	//folder_Ouputs = "/Users/edward/work/JsonOutputs/"
+	folder_Ouputs = "/Users/edward/work/JsonOutputsTest/"
 )
-
-// func each_file(files []string) {
-// 	fmt.Printf("hmmm?")
-// 	for _, file := range files {
-// 		println("file=", file)
-// 		rl := &[]dt.Record{}
-// 		file_rw(file, rl)
-// 		//fmt.Println("rl: ", len(*rl))
-// 	}
-// }
 
 func ReadFolderBase() {
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)
@@ -62,21 +53,31 @@ func ReadFolderBase() {
 		jobPool.QueuedJobs(),
 		jobPool.ActiveRoutines())
 
-	all_date, _ := ioutil.ReadDir(folder_base)
-	fmt.Println("Reading DIR=", folder_base)
-	for i := len(all_date) - 1; i >= 0; i-- {
-		f := all_date[i]
-		//for _, f := range all_date {
-		//rl := &[]dt.Record{}
-		date := f.Name()
-
-		files := dt.GetFilelist(folder_base + date)
-		fmt.Printf("%s files %v\n", date, len(files))
-
-		for _, file := range files {
-			jobPool.QueueJob("main", &WorkProvider1{file, date}, false)
-		}
+	files1 := dt.GetFilelist("/Users/edward/work/backup/2017-04-17")
+	fmt.Printf("%s files %v\n", "2017-04-17", len(files1))
+	for _, file := range files1 {
+		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-17"}, false)
 	}
+	files2 := dt.GetFilelist("/Users/edward/work/backup/2017-04-16")
+	fmt.Printf("%s files %v\n", "2017-04-161", len(files2))
+	for _, file := range files2 {
+		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-16"}, false)
+	}
+
+	// all_date, _ := ioutil.ReadDir(folder_base)
+	// fmt.Println("Reading DIR=", folder_base)
+	// for i := len(all_date) - 1; i >= 0; i-- {
+	// 	f := all_date[i]
+	// 	//for _, f := range all_date {
+	// 	//rl := &[]dt.Record{}
+	// 	date := f.Name()
+	// 	files := dt.GetFilelist(folder_base + date)
+	// 	fmt.Printf("%s files %v\n", date, len(files))
+
+	// 	for _, file := range files {
+	// 		jobPool.QueueJob("main", &WorkProvider1{file, date}, false)
+	// 	}
+	// }
 
 }
 

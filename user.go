@@ -5,4 +5,6 @@ type User struct {
 	Android_ifa string `json:"android_ifa"`
 	Ip          string `json:"ip"`
 	Size        string `json:"size"`
+	Lat         string `json:"lat"`
+	Lon         string `json:"lon"`
 }
