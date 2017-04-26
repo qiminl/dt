@@ -92,7 +92,7 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 		panic(err)
 	}
 	defer f.Close()
-
+	cc := 0
 	head_flag := false
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
@@ -100,6 +100,10 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 		line := strings.Fields(scanner.Text())
 		//fmt.Println(" line[0]: ", line[0])
 		if len(line) > 2 {
+			if cc%1000000 == 0 {
+				fmt.Println("line: ", cc)
+			}
+			cc++
 			if line[1] == "n" {
 				//i, _ := strconv.ParseInt(time, 10, 64)
 				//time := TT.Unix(i, 0).String()
@@ -148,13 +152,12 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 			//size
 			case line[2] == "size" && len(line) > 4:
 				size = line[4]
-
 			//location
-			case line[2] == "lat" && len(line) > 4:
-				size = line[4]
+			// case line[2] == "lat" && len(line) > 3:
+			// 	lat = line[3]
 
-			case line[2] == "lon" && len(line) > 4:
-				size = line[4]
+			// case line[2] == "lon" && len(line) > 3:
+			// 	lon = line[3]
 
 			/**
 			Campaign struct
@@ -263,10 +266,11 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 			case line[2] == "device_pid" && len(line) > 4:
 				device_pid = line[4]
 				//operator
-			case line[2] == "operator" && len(line) > 4:
-				for loo := 3; loo < len(line); loo++ {
-					operator += line[loo]
-				}
+			case line[2] == "operator" && len(line) > 5:
+				operator = line[4] + line[5]
+				// 	for loo := 3; loo < len(line); loo++ {
+				// 		operator = line[loo]
+				// 	}
 			}
 
 		}

@@ -43,7 +43,7 @@ func (wp *WorkProvider1) RunJob(jobRoutine int) {
 var (
 	folder_base = "/Users/edward/work/backup/"
 	//folder_Ouputs = "/Users/edward/work/JsonOutputs/"
-	folder_Ouputs = "/Users/edward/work/JsonOutputsTest/"
+	folder_Ouputs = "/Users/edward/work/wash/"
 )
 
 func ReadFolderBase() {
@@ -59,7 +59,7 @@ func ReadFolderBase() {
 		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-17"}, false)
 	}
 	files2 := dt.GetFilelist("/Users/edward/work/backup/2017-04-16")
-	fmt.Printf("%s files %v\n", "2017-04-161", len(files2))
+	fmt.Printf("%s files %v\n", "2017-04-16", len(files2))
 	for _, file := range files2 {
 		jobPool.QueueJob("main", &WorkProvider1{file, "2017-04-16"}, false)
 	}

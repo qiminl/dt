@@ -18,7 +18,7 @@ import (
 
 var (
 	folder_Ouputs       = "/Users/edward/work/WASH/"
-	folder_base         = "/Users/edward/work/JsonOutputsTest"
+	folder_base         = "/Users/edward/work/ttt"
 	folder_Ouputs_no_os = "/Users/edward/work/WASH_no_os_test/"
 	//os_flag             = false
 )
@@ -52,6 +52,7 @@ type TrafficRatio struct {
 }
 
 func (wp *FolderReader) RunJob(jobRoutine int) {
+	fmt.Println("enter once")
 
 	start := time.Now()
 	fmt.Printf("start:", wp.Folder)
@@ -83,6 +84,9 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 				(*rl).Records[index].User.Size
 			//TrafficList[key] += 1 // = append(TrafficList[key], (*rl).Records[index]) //
 			//value := TrafficList[key]
+			if TrafficList[key] == nil {
+				TrafficList[key] = new(TrafficRatio)
+			}
 			TrafficList[key].Counter++
 			if (*rl).Records[index].Device.Conn_type != "Unknown" {
 				TrafficList[key].Conn_type++
@@ -177,7 +181,7 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 		//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
 		//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
 		//if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic]) + ", " + wp.Date); err != nil {
-		if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " +
+		if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic].Counter) + ", " +
 			strconv.Itoa(TrafficList[traffic].Android_id) + ", " + strconv.Itoa(TrafficList[traffic].Carrier_code) + ", " +
 			strconv.Itoa(TrafficList[traffic].Conn_type) + ", " + strconv.Itoa(TrafficList[traffic].Smaato) + ", " +
 			strconv.Itoa(TrafficList[traffic].VoiceAd)); err != nil {
@@ -204,6 +208,10 @@ func ReadFolderWash(folder string) {
 		//fmt.Println("folder name = ", folder+"/"+date)
 		jobPool.QueueJob("main", &FolderReader{folder + "/" + date, date}, false)
 	}
+	fmt.Printf("*******> QW: %d AR: %d CPU:%d\n",
+		jobPool.QueuedJobs(),
+		jobPool.ActiveRoutines(),
+		runtime.NumCPU())
 }
 
 func ExportJson(absolute_path []string, rl *dt.RecordList) {
