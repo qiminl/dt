@@ -170,7 +170,7 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 				set = line[2]
 				//set_count[line[2]] += 1
 			//time
-			case line[2] == "t":
+			case line[2] == "t" && len(line) > 3:
 				time = line[3]
 			//app_id
 			case line[2] == "app_id" && len(line) > 4:

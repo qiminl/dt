@@ -127,44 +127,6 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 		}
 		fmt.Println("file: %s done", wp.Folder)
 	}
-	/*
-		if os_flag {
-			path := folder_Ouputs + wp.Date
-			if _, err := os.Stat(path); os.IsNotExist(err) {
-				os.Create(path)
-			}
-			f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
-			if err != nil {
-				panic(err)
-			}
-
-			defer f.Close()
-
-			//fmt.Println("pub_v_id, app_id, size")
-			for traffic := range TrafficList {
-				heads := strings.Split(traffic, ",")
-				//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
-				//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
-				if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + " = " + strconv.Itoa(len(TrafficList[traffic]))); err != nil {
-					panic(err)
-				}
-				os_map := make(map[string]int)
-				//fmt.Println(TrafficList[traffic][0].Device.Os_v)
-				for index := range TrafficList[traffic] {
-					key := TrafficList[traffic][index].Device.Os_n + " + " + TrafficList[traffic][index].Device.Os_v
-					os_map[key] += 1
-				}
-				for index2 := range os_map {
-					//fmt.Println("\tos: ",index2, " = ", os_map[index2])
-					//word :="\tos: "+index2+ " = "+ os_map[index2]
-					if _, err = f.WriteString("\tos: " + index2 + " = " + strconv.Itoa(os_map[index2]) + "\n"); err != nil {
-						panic(err)
-					}
-				}
-
-			}
-		} else {
-	*/
 	path := folder_Ouputs_no_os + wp.Date + ".csv"
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		os.Create(path)
@@ -183,11 +145,15 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 		//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
 		//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
 		//if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic]) + ", " + wp.Date); err != nil {
-		total := TrafficList[traffic].Counter
-		if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic].Counter) + ", " +
-			strconv.FormatFloat(float64(TrafficList[traffic].Android_id), 'f', 3, 64) + ", " + strconv.FormatFloat(float64(TrafficList[traffic].Carrier_code/total), 'f', 3, 64) + ", " +
-			strconv.FormatFloat(float64(TrafficList[traffic].Conn_type), 'f', 3, 64) + ", " + strconv.FormatFloat(float64(TrafficList[traffic].Smaato), 'f', 3, 64) + ", " +
-			strconv.FormatFloat(float64(TrafficList[traffic].VoiceAd), 'f', 3, 64)); err != nil {
+		total := float64(TrafficList[traffic].Counter)
+		if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " +
+			strconv.Itoa(TrafficList[traffic].Counter) + ", " +
+			strconv.FormatFloat(float64(TrafficList[traffic].Android_id)/total, 'f', 3, 64) + ", " +
+			strconv.FormatFloat(float64(TrafficList[traffic].Carrier_code)/total, 'f', 3, 64) + ", " +
+			strconv.FormatFloat(float64(TrafficList[traffic].Conn_type)/total, 'f', 3, 64) + ", " +
+			strconv.FormatFloat(float64(TrafficList[traffic].Smaato)/total, 'f', 3, 64) + ", " +
+			strconv.FormatFloat(float64(TrafficList[traffic].VoiceAd)/total, 'f', 3, 64) + ", " +
+			strconv.FormatFloat(float64(TrafficList[traffic].Status)/total, 'f', 3, 64)); err != nil {
 			panic(err)
 		}
 	}
