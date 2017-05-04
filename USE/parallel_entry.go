@@ -49,7 +49,7 @@ var (
 func ReadFolderBase() {
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)
 
-	files1 := dt.GetFilelist("/Users/edward/work/backup/2017-05-03")
+	files1 := dt.GetFilelist("/Users/edward/work/split/2017-05-03")
 	fmt.Printf("%s files %v\n", "2017-05-03", len(files1))
 	for _, file := range files1 {
 		jobPool.QueueJob("main", &WorkProvider1{file, "2017-05-03"}, false)

@@ -68,11 +68,11 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 	/**
 	to create a report on % of fields, %SSPs, etc
 	*/
-	path := folder_Ouputs_no_os + wp.Date + ".csv"
-	trafficListReport(wp, path)
+	// path := folder_Ouputs_no_os + wp.Date + ".csv"
+	// trafficListReport(wp, path)
 
-	// vadn := "hellogame"
-	// ImpsReport(vadn, wp.Folder, wp.Date)
+	vadn := "hellogame"
+	ImpsReport(vadn, wp.Folder, wp.Date)
 	// AdnReport(vadn, wp.Folder, wp.Date)
 
 	//ioutil.WriteFile(path, RecordList2B, 0644)
@@ -110,7 +110,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	//ReadFolderWash(folder_base)
 
-	date := "2017-04-29"
+	date := "2017-05-03"
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)
 	jobPool.QueueJob("main", &FolderReader{folder_base + "/" + date, date}, false)
 	// jobPool.QueueJob("main", &FolderReader{folder_base + "/" + "2017-04-12", "2017-04-12"}, false)
@@ -335,8 +335,9 @@ func ImpsReport(vadn string, folder string, Date string) {
 	over_counter := 0
 
 	//location, _ := time.LoadLocation("Asia/Beijing")
-	tm_max := time.Unix(1493305200, 0)
-	tm_min := time.Unix(1493305200, 0)
+	tm_max := time.Unix(1493810683, 0)
+	tm_min := time.Unix(1493810683, 0)
+	flag_init := true
 
 	for _, file := range files {
 
@@ -361,6 +362,12 @@ func ImpsReport(vadn string, folder string, Date string) {
 
 			//(*rl).Records[index].Campaign.Status == "yesad" &&(*rl).Records[index].Campaign.Bidder == vadn
 			//
+			if flag_init {
+				temp, _ := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
+				tm_max = time.Unix(temp, 0)
+				tm_min = time.Unix(temp, 0)
+				flag_init = false
+			}
 			i, err := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
 			tm := time.Unix(i, 0)
 			if tm.After(tm_max) {
@@ -370,13 +377,13 @@ func ImpsReport(vadn string, folder string, Date string) {
 			}
 
 			if (*rl).Records[index].Campaign.Set == "imps" {
-				entry := (*rl).Records[index].Campaign.Set + ", " + //(*rl).Records[index].Campaign.Pub_v_id + ", " +
+				entry := (*rl).Records[index].Campaign.Set + ", " + (*rl).Records[index].Campaign.Pub_v_id + ", " +
 					(*rl).Records[index].Campaign.App_id + ", " + (*rl).Records[index].Campaign.Bidder + ", " +
-					//(*rl).Records[index].Campaign.Camp_id + ", " + (*rl).Records[index].User.Size + ", " +
-					//(*rl).Records[index].Campaign.Ext_id + ", " +
-					tm.String() //+ ", " +
-					// (*rl).Records[index].Device.Device_mac + ", " + (*rl).Records[index].Device.Ios_ifa + ", " +
-					// (*rl).Records[index].Device.Android_id + ", " + (*rl).Records[index].User.Ip
+					(*rl).Records[index].Campaign.Camp_id + ", " + (*rl).Records[index].User.Size + ", " +
+					(*rl).Records[index].Campaign.Ext_id + ", " +
+					tm.String() + ", " +
+					(*rl).Records[index].Device.Device_mac + ", " + (*rl).Records[index].Device.Ios_ifa + ", " +
+					(*rl).Records[index].Device.Android_id + ", " + (*rl).Records[index].User.Ip
 				if _, err = f.WriteString(entry + "\n"); err != nil {
 					panic(err)
 				}
@@ -385,6 +392,7 @@ func ImpsReport(vadn string, folder string, Date string) {
 		}
 	}
 	fmt.Println("time_max:", tm_max, " ; time_min:", tm_min)
+	fmt.Println("time_max:", strconv.FormatInt(tm_max.Unix(), 10), " ; time_min:", strconv.FormatInt(tm_min.Unix(), 10))
 	// fmt.Println("adn_counter :=", adn_counter, " ; counter :=", over_counter)
 	// for k, v := range size {
 	// 	fmt.Println(k, ":", v)
