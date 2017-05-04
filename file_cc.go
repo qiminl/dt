@@ -8,7 +8,9 @@ import (
 	// "sort"
 	"io/ioutil"
 	// TT "time"
+	"bytes"
 	"encoding/json"
+	"math"
 	"strconv"
 )
 
@@ -130,4 +132,84 @@ func Write_map_FraudLogix(result_map map[string]int, file string,
 		fmt.Fprintln(w, ip)
 	}
 	fmt.Println("Done writing ", file)
+}
+
+const chunkSize int64 = 4 << 25
+const objectSize int64 = 4 << 10
+
+/**
+Split large file, output to folder
+@param file_path absolute file path
+@param dest_folder output folder location
+*/
+func File_Split(file_path string, dest_folder string) bool {
+
+	fileInfo, err := os.Stat(file_path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	num := int64(math.Ceil(float64(fileInfo.Size()) / float64(chunkSize-objectSize)))
+	fmt.Println("Total Chunks# ", num)
+
+	fi, err := os.OpenFile(file_path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+
+	b := make([]byte, chunkSize)
+	var i int64 = 1
+	var read_mark int64 = 0   //byte marker for next read
+	var buffer_mark int64 = 0 //buffer marker for current chunck
+	for ; i <= int64(num); i++ {
+
+		if fileInfo.Size()-read_mark > chunkSize {
+			buffer_mark = read_mark + chunkSize - objectSize
+			fi.Seek(buffer_mark, 0)
+			buffer := make([]byte, objectSize)
+			fi.Read(buffer)
+			hehe := []byte("+ n adserver-dev")
+			buffer_mark = buffer_mark + int64(bytes.LastIndex(buffer, hehe))
+			// if i == 1 {
+			// 	fmt.Println("b4 tune: ", buffer_mark, " buffer:", string(buffer[:len(buffer)]))
+			// 	fmt.Println("after tune: ", string(buffer[:bytes.LastIndex(buffer, hehe)]))
+			// }
+			b = make([]byte, buffer_mark-read_mark)
+		} else if fileInfo.Size()-read_mark > 0 {
+			b = make([]byte, fileInfo.Size()-read_mark)
+		} else {
+			fmt.Println("oh fck my life")
+			b = make([]byte, 0)
+		}
+
+		//fmt.Println("hm:", (i-1)*(chunkSize))
+		fi.Seek(read_mark, 0)
+		fi.Read(b)
+
+		read_mark = buffer_mark
+
+		CheckFolder(dest_folder)
+		f, err := os.OpenFile(dest_folder+fileInfo.Name()+"_"+strconv.Itoa(int(i))+".asb", os.O_CREATE|os.O_WRONLY, os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+		f.Write(b)
+		f.Close()
+	}
+	fi.Close()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func CheckFolder(folder string) bool {
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		os.Mkdir(folder, os.ModePerm)
+		fmt.Println("created: " + folder)
+		return true
+	} else {
+		return false
+	}
 }
