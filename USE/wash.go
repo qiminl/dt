@@ -110,7 +110,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	//ReadFolderWash(folder_base)
 
-	date := "2017-05-03"
+	date := "2017-02-18"
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)
 	jobPool.QueueJob("main", &FolderReader{folder_base + "/" + date, date}, false)
 	// jobPool.QueueJob("main", &FolderReader{folder_base + "/" + "2017-04-12", "2017-04-12"}, false)
@@ -204,6 +204,7 @@ func trafficListReport(wp *FolderReader, path string) {
 				TrafficList[key].HelloGame++
 			}
 			//TrafficList[key]
+
 		}
 		fmt.Printf("file: %s done\n", file)
 	}
