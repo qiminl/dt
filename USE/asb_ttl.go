@@ -10,7 +10,7 @@ import (
 
 var (
 	//directory = "/Users/edward/aerospike-vm/bu"
-	directory = "/Users/edward/work/backup/2017-04-12"
+	directory = "/Users/edward/work/backup/2017/05-13"
 )
 
 func test_reader(files []string) {

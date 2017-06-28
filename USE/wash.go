@@ -71,9 +71,9 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 	// path := folder_Ouputs_no_os + wp.Date + ".csv"
 	// trafficListReport(wp, path)
 
-	vadn := "hellogame"
+	vadn := "smaato"
 	ImpsReport(vadn, wp.Folder, wp.Date)
-	// AdnReport(vadn, wp.Folder, wp.Date)
+	//AdnReport(vadn, wp.Folder, wp.Date)
 
 	//ioutil.WriteFile(path, RecordList2B, 0644)
 	t2 := time.Now()
@@ -110,7 +110,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	//ReadFolderWash(folder_base)
 
-	date := "2017-02-18"
+	date := "06-14"
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)
 	jobPool.QueueJob("main", &FolderReader{folder_base + "/" + date, date}, false)
 	// jobPool.QueueJob("main", &FolderReader{folder_base + "/" + "2017-04-12", "2017-04-12"}, false)
@@ -281,11 +281,14 @@ func AdnReport(vadn string, folder string, Date string) {
 		for index := range (*rl).Records {
 			size[(*rl).Records[index].User.Size] += 1
 			status[(*rl).Records[index].Campaign.Set] += 1
+			i, err := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
 
 			//(*rl).Records[index].Campaign.Set == "imps" &&
-			if (*rl).Records[index].Campaign.Status == "yesad" &&
-				(*rl).Records[index].Campaign.Bidder == vadn {
-				i, err := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
+			if //(*rl).Records[index].Campaign.Status == "yesad" &&
+			//(*rl).Records[index].Campaign.Bidder == vadn &&
+			(*rl).Records[index].Campaign.Set == "clicks" &&
+				(i >= 1494658800 && i <= 1494745200) {
+
 				tm := time.Unix(i, 0)
 				entry := (*rl).Records[index].Campaign.Set + ", " + (*rl).Records[index].Campaign.Pub_v_id + ", " +
 					(*rl).Records[index].Campaign.App_id + ", " + (*rl).Records[index].Campaign.Bidder + ", " +
@@ -334,10 +337,11 @@ func ImpsReport(vadn string, folder string, Date string) {
 
 	adn_counter := 0
 	over_counter := 0
+	campaign_counter := 0
 
 	//location, _ := time.LoadLocation("Asia/Beijing")
 	tm_max := time.Unix(1493810683, 0)
-	tm_min := time.Unix(1493810683, 0)
+	tm_min := time.Unix(1497484800, 0)
 	flag_init := true
 
 	for _, file := range files {
@@ -357,16 +361,24 @@ func ImpsReport(vadn string, folder string, Date string) {
 			status[(*rl).Records[index].Campaign.Set] += 1
 
 			if (*rl).Records[index].Campaign.Set == "adn_responses" &&
-				(*rl).Records[index].Campaign.Status == "yesad" {
-				adn_counter++
+				(*rl).Records[index].Campaign.Status == "yesad" &&
+				(*rl).Records[index].Campaign.Bidder == vadn {
+				adn_counter++ //yesad counter?
 			}
 
-			//(*rl).Records[index].Campaign.Status == "yesad" &&(*rl).Records[index].Campaign.Bidder == vadn
-			//
+			if (*rl).Records[index].Campaign.Set == "imps" &&
+				(*rl).Records[index].Campaign.Bidder == vadn &&
+				(*rl).Records[index].Campaign.Camp_id == "2048" {
+				campaign_counter++ //yesad counter?
+			}
+
+			//max & min time converting only
 			if flag_init {
 				temp, _ := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
 				tm_max = time.Unix(temp, 0)
 				tm_min = time.Unix(temp, 0)
+
+				fmt.Println("flag init: time_max:", tm_max, " ; time_min:", tm_min)
 				flag_init = false
 			}
 			i, err := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
@@ -377,7 +389,10 @@ func ImpsReport(vadn string, folder string, Date string) {
 				tm_min = tm
 			}
 
-			if (*rl).Records[index].Campaign.Set == "imps" {
+			if (*rl).Records[index].Campaign.Set == "imps" &&
+				(*rl).Records[index].Campaign.Bidder == vadn {
+				// i, err := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
+				// tm := time.Unix(i, 0)
 				entry := (*rl).Records[index].Campaign.Set + ", " + (*rl).Records[index].Campaign.Pub_v_id + ", " +
 					(*rl).Records[index].Campaign.App_id + ", " + (*rl).Records[index].Campaign.Bidder + ", " +
 					(*rl).Records[index].Campaign.Camp_id + ", " + (*rl).Records[index].User.Size + ", " +
@@ -388,13 +403,14 @@ func ImpsReport(vadn string, folder string, Date string) {
 				if _, err = f.WriteString(entry + "\n"); err != nil {
 					panic(err)
 				}
-				over_counter++
+				over_counter++ //imps counter?
 			}
 		}
 	}
 	fmt.Println("time_max:", tm_max, " ; time_min:", tm_min)
 	fmt.Println("time_max:", strconv.FormatInt(tm_max.Unix(), 10), " ; time_min:", strconv.FormatInt(tm_min.Unix(), 10))
-	// fmt.Println("adn_counter :=", adn_counter, " ; counter :=", over_counter)
+	fmt.Println("for vadn=", vadn, "adn_counter yesad:=", adn_counter, " ; total imps:=", over_counter)
+	fmt.Println("campaign:= 2048, total imps:=", campaign_counter)
 	// for k, v := range size {
 	// 	fmt.Println(k, ":", v)
 	// }
@@ -402,81 +418,3 @@ func ImpsReport(vadn string, folder string, Date string) {
 	// 	fmt.Println(k, ":", v)
 	// }
 }
-
-/**
-func ExportJson(absolute_path []string, rl *dt.RecordList) {
-	file_name := absolute_path[len(absolute_path)-1]
-	date := absolute_path[len(absolute_path)-2]
-	if _, err := os.Stat(folder_Ouputs + date + "/"); os.IsNotExist(err) {
-		os.Mkdir(folder_Ouputs+date+"/", os.ModePerm)
-		fmt.Println("created: " + folder_Ouputs + date + "/")
-	}
-
-	dt.Write_json_Array_RL(folder_Ouputs+date+"/"+file_name, rl)
-}
-
-func ReadFolderBase() {
-	jobPool := jobpool.New(runtime.NumCPU(), 1000)
-
-	all_date, _ := ioutil.ReadDir(folder_base)
-	fmt.Println("Reading DIR=", folder_base)
-	for _, f := range all_date {
-		//rl := &[]dt.Record{}
-		date := f.Name()
-
-		files := dt.GetFilelist(folder_base + date)
-		fmt.Printf("%s files %v\n", date, len(files))
-
-		for _, file := range files {
-			jobPool.QueueJob("main", &WorkProvider1{file, date}, false)
-		}
-	}
-
-}
-
-func ReadFolder(folder string) {
-	jobPool := jobpool.New(runtime.NumCPU(), 1000)
-
-	fmt.Printf("*******> QW: %d AR: %d\n",
-		jobPool.QueuedJobs(),
-		jobPool.ActiveRoutines())
-
-	//rl := &[]dt.Record{}
-	absolute_path := strings.Split(folder, "/")
-	date := absolute_path[len(absolute_path)-1]
-
-	files := dt.GetFilelist(folder)
-	fmt.Printf("%s files %v\n", date, len(files))
-
-	for _, file := range files {
-		jobPool.QueueJob("main", &WorkProvider1{file, date}, false)
-	}
-}
-
-func (wp *WorkProvider1) RunJob(jobRoutine int) {
-	file := wp.File
-	start := time.Now()
-
-	rl := &dt.RecordList{}
-	configFile, err := os.Open(file)
-	if err != nil {
-		fmt.Println("opening json file", err.Error())
-	}
-	jsonParser := json.NewDecoder(configFile)
-	if err = jsonParser.Decode(&rl); err != nil {
-		fmt.Println("parsing config file", err.Error())
-	}
-
-	TrafficList := make(map[string][]dt.Record)
-	for index := range (*rl).Records {
-		TrafficList[(*rl).Records[index].Campaign.App_id] = append(TrafficList[(*rl).Records[index].Campaign.App_id], (*rl).Records[index])
-	}
-
-	// absolute_path := strings.Split(file, "/")
-	// ExportJson(absolute_path, rl)
-
-	t2 := time.Now()
-	fmt.Printf("Date:%s :rw file %s took %v\n", wp.Date, wp.File, t2.Sub(start))
-
-}
-**/

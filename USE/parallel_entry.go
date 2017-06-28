@@ -14,6 +14,16 @@ import (
 	//"github.com/op/go-logging"
 )
 
+var (
+	folder_backup_base = "/Users/edward/work/backup/2017/"
+
+	folder_base = "/Users/edward/work/split/"
+	//folder_Ouputs = "/Users/edward/work/JsonOutputs/"
+	folder_Ouputs = "/Users/edward/work/wash/"
+
+	date_arg = "06-19"
+)
+
 type WorkProvider1 struct {
 	File string
 	Date string
@@ -37,22 +47,14 @@ func (wp *WorkProvider1) RunJob(jobRoutine int) {
 
 	t2 := time.Now()
 	fmt.Printf("Date:%s :rw file %s took %v\n", wp.Date, wp.File, t2.Sub(start))
-
 }
-
-var (
-	folder_base = "/Users/edward/work/split/"
-	//folder_Ouputs = "/Users/edward/work/JsonOutputs/"
-	folder_Ouputs = "/Users/edward/work/wash/"
-)
 
 func ReadFolderBase() {
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)
-
-	files1 := dt.GetFilelist("/Users/edward/work/backup/2017-02-18")
-	fmt.Printf("%s files %v\n", "2017-02-18", len(files1))
+	files1 := dt.GetFilelist("/Users/edward/work/split/" + date_arg)
+	fmt.Printf("%s files %v\n", date_arg, len(files1))
 	for _, file := range files1 {
-		jobPool.QueueJob("main", &WorkProvider1{file, "2017-02-18"}, false)
+		jobPool.QueueJob("main", &WorkProvider1{file, date_arg}, false)
 	}
 
 	// all_date, _ := ioutil.ReadDir(folder_base)
@@ -91,17 +93,47 @@ func ReadFolder(folder string) {
 	}
 }
 
+//Original asb files might be too large to handle at onece, so split it;
+func FileSplit() {
+	date := date_arg + "/"
+	start := time.Now()
+	files := dt.GetFilelist(folder_backup_base + date)
+	for _, file := range files {
+		dt.File_Split(file, folder_base+date)
+	}
+	t2 := time.Now()
+	fmt.Printf("Date:%s :output %s took %v\n", date, folder_base+date, t2.Sub(start))
+}
+
+func RemoveSplit() {
+	os.RemoveAll(folder_base + date_arg + "/")
+}
+
 func main() {
 
-	// if len(os.Args) == 2 {
-	// 	folder_base = os.Args[1]
-	// 	folder_Ouputs = os.Args[2]
-	// }
+	//get date for use;
+	if len(os.Args) >= 1 {
+		date_arg = os.Args[1]
+		//folder_Ouputs = os.Args[2]
+	} else {
+		panic(fmt.Printf("Need date as argument in mm-dd format"))
+		return 0
+	}
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	start := time.Now()
+	//split original data file into smaller piece.
+	FileSplit()
 
+	//parallel output
 	ReadFolderBase()
 	//ReadFolder("/Users/edward/work/backup/2017-04-17")
+
+	//removing intermediate files
+	RemoveSplit()
+
+	t2 := time.Now()
+	fmt.Printf("Date:%s done split&parallel&delete, took %v\n", date, t2.Sub(start))
 
 	var input string
 	fmt.Scanln(&input)
