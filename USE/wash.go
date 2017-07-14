@@ -418,3 +418,111 @@ func ImpsReport(vadn string, folder string, Date string) {
 	// 	fmt.Println(k, ":", v)
 	// }
 }
+
+func UnqiueUserReport(vadn string, folder string, Date string) {
+
+	path := folder_Ouputs + Date + ".csv"
+	//export result to file
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.Create(path)
+	}
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	if _, err = f.WriteString("set, pub_v_id, app_id, bidder, camp_id, size, ext_id, time, device_mac, ios_ifa, android_id, ip\n"); err != nil {
+		panic(err)
+	}
+
+	//TrafficList := make(map[string]*TrafficRatio) // int) //[]dt.Record)
+	//ReadFolderBase()
+	files := dt.GetFilelist(folder)
+	fmt.Printf("%s files %v\n", Date, len(files))
+
+	size := make(map[string]int)
+	status := make(map[string]int)
+
+	adn_counter := 0
+	over_counter := 0
+	campaign_counter := 0
+
+	//location, _ := time.LoadLocation("Asia/Beijing")
+	tm_max := time.Unix(1493810683, 0)
+	tm_min := time.Unix(1497484800, 0)
+	flag_init := true
+
+	for _, file := range files {
+
+		rl := &dt.RecordList{}
+		configFile, err := os.Open(file)
+		if err != nil {
+			fmt.Println("opening json file", err.Error())
+		}
+		jsonParser := json.NewDecoder(configFile)
+		if err = jsonParser.Decode(&rl); err != nil {
+			fmt.Println("parsing config file", err.Error())
+		}
+
+		for index := range (*rl).Records {
+			size[(*rl).Records[index].User.Size] += 1
+			status[(*rl).Records[index].Campaign.Set] += 1
+
+			if (*rl).Records[index].Campaign.Set == "adn_responses" &&
+				(*rl).Records[index].Campaign.Status == "yesad" &&
+				(*rl).Records[index].Campaign.Bidder == vadn {
+				adn_counter++ //yesad counter?
+			}
+
+			if (*rl).Records[index].Campaign.Set == "imps" &&
+				(*rl).Records[index].Campaign.Bidder == vadn &&
+				(*rl).Records[index].Campaign.Camp_id == "2048" {
+				campaign_counter++ //yesad counter?
+			}
+
+			//max & min time converting only
+			if flag_init {
+				temp, _ := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
+				tm_max = time.Unix(temp, 0)
+				tm_min = time.Unix(temp, 0)
+
+				fmt.Println("flag init: time_max:", tm_max, " ; time_min:", tm_min)
+				flag_init = false
+			}
+			i, err := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
+			tm := time.Unix(i, 0)
+			if tm.After(tm_max) {
+				tm_max = tm
+			} else if tm.Before(tm_min) {
+				tm_min = tm
+			}
+
+			if (*rl).Records[index].Campaign.Set == "imps" &&
+				(*rl).Records[index].Campaign.Bidder == vadn {
+				// i, err := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
+				// tm := time.Unix(i, 0)
+				entry := (*rl).Records[index].Campaign.Set + ", " + (*rl).Records[index].Campaign.Pub_v_id + ", " +
+					(*rl).Records[index].Campaign.App_id + ", " + (*rl).Records[index].Campaign.Bidder + ", " +
+					(*rl).Records[index].Campaign.Camp_id + ", " + (*rl).Records[index].User.Size + ", " +
+					(*rl).Records[index].Campaign.Ext_id + ", " +
+					tm.String() + ", " +
+					(*rl).Records[index].Device.Device_mac + ", " + (*rl).Records[index].Device.Ios_ifa + ", " +
+					(*rl).Records[index].Device.Android_id + ", " + (*rl).Records[index].User.Ip
+				if _, err = f.WriteString(entry + "\n"); err != nil {
+					panic(err)
+				}
+				over_counter++ //imps counter?
+			}
+		}
+	}
+	fmt.Println("time_max:", tm_max, " ; time_min:", tm_min)
+	fmt.Println("time_max:", strconv.FormatInt(tm_max.Unix(), 10), " ; time_min:", strconv.FormatInt(tm_min.Unix(), 10))
+	fmt.Println("for vadn=", vadn, "adn_counter yesad:=", adn_counter, " ; total imps:=", over_counter)
+	fmt.Println("campaign:= 2048, total imps:=", campaign_counter)
+	// for k, v := range size {
+	// 	fmt.Println(k, ":", v)
+	// }
+	// for k, v := range status {
+	// 	fmt.Println(k, ":", v)
+	// }
+}

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/goinggo/jobpool"
+	"sync"
 	//"github.com/op/go-logging"
 )
 
@@ -22,6 +23,7 @@ var (
 	folder_Ouputs = "/Users/edward/work/wash/"
 
 	date_arg = "06-19"
+	wg       sync.WaitGroup
 )
 
 type WorkProvider1 struct {
@@ -30,6 +32,7 @@ type WorkProvider1 struct {
 }
 
 func (wp *WorkProvider1) RunJob(jobRoutine int) {
+	defer wg.Done()
 	file := wp.File
 	rl := &[]dt.Record{}
 	start := time.Now()
@@ -54,23 +57,12 @@ func ReadFolderBase() {
 	files1 := dt.GetFilelist("/Users/edward/work/split/" + date_arg)
 	fmt.Printf("%s files %v\n", date_arg, len(files1))
 	for _, file := range files1 {
+		wg.Add(1)
 		jobPool.QueueJob("main", &WorkProvider1{file, date_arg}, false)
 	}
 
-	// all_date, _ := ioutil.ReadDir(folder_base)
-	// fmt.Println("Reading DIR=", folder_base)
-	// for i := len(all_date) - 1; i >= 0; i-- {
-	// 	f := all_date[i]
-	// 	//for _, f := range all_date {
-	// 	//rl := &[]dt.Record{}
-	// 	date := f.Name()
-	// 	files := dt.GetFilelist(folder_base + date)
-	// 	fmt.Printf("%s files %v\n", date, len(files))
-
-	// 	for _, file := range files {
-	// 		jobPool.QueueJob("main", &WorkProvider1{file, date}, false)
-	// 	}
-	// }
+	wg.Wait()
+	fmt.Println("parallel output done")
 
 }
 
@@ -102,9 +94,10 @@ func FileSplit() {
 		dt.File_Split(file, folder_base+date)
 	}
 	t2 := time.Now()
-	fmt.Printf("Date:%s :output %s took %v\n", date, folder_base+date, t2.Sub(start))
+	fmt.Printf("File Split done; \n Date:%s :output %s took %v\n", date, folder_base+date, t2.Sub(start))
 }
 
+//remove split files after wash
 func RemoveSplit() {
 	os.RemoveAll(folder_base + date_arg + "/")
 }
@@ -116,8 +109,8 @@ func main() {
 		date_arg = os.Args[1]
 		//folder_Ouputs = os.Args[2]
 	} else {
-		panic(fmt.Printf("Need date as argument in mm-dd format"))
-		return 0
+		// panic(fmt.Println("Need date as argument in mm-dd format"))
+		return
 	}
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -133,7 +126,7 @@ func main() {
 	RemoveSplit()
 
 	t2 := time.Now()
-	fmt.Printf("Date:%s done split&parallel&delete, took %v\n", date, t2.Sub(start))
+	fmt.Printf("Date:%s done split&parallel&delete, took %v\n", date_arg, t2.Sub(start))
 
 	var input string
 	fmt.Scanln(&input)
