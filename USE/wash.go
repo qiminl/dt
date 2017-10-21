@@ -102,15 +102,19 @@ func ReadFolderWash(folder string) {
 
 func main() {
 
-	// if len(os.Args) == 2 {
-	// 	folder_base = os.Args[1]
-	// 	folder_Ouputs = os.Args[2]
-	// }
+	date := "08-04"
+	///get date for use;
+	if len(os.Args) >= 1 {
+		date = os.Args[1]
+		//folder_Ouputs = os.Args[2]
+	} else {
+		// panic(fmt.Println("Need date as argument in mm-dd format"))
+		return
+	}
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	//ReadFolderWash(folder_base)
 
-	date := "07-28"
 	jobPool := jobpool.New(runtime.NumCPU(), 1000)
 	jobPool.QueueJob("main", &FolderReader{folder_base + "/" + date, date}, false)
 	// jobPool.QueueJob("main", &FolderReader{folder_base + "/" + "2017-04-12", "2017-04-12"}, false)
@@ -382,22 +386,22 @@ func ImpsReport(vadn string, folder string, Date string) {
 				tm_min = tm
 			}
 
-			if ((*rl).Records[index].Device.Ios_ifa == "9A87D89E-42B1-40BE-A56C-DE9635448D64" ||
-				(*rl).Records[index].Device.Ios_ifa == "8F226BF8-C5B9-487A-86BD-2475DA6C0580") &&
-				(*rl).Records[index].Campaign.App_id == "417" {
+			if (*rl).Records[index].Campaign.App_id == "574" || (*rl).Records[index].Campaign.App_id == "575" {
 				//&& (*rl).Records[index].Campaign.Camp_id == "2224" {
 				//(*rl).Records[index].Campaign.Bidder == vadn {
 				// i, err := strconv.ParseInt((*rl).Records[index].Campaign.Time, 10, 64)
 				// tm := time.Unix(i, 0)
 				//fmt.Println((*rl).Records[index].Device.Ios_ifa)
-				entry := (*rl).Records[index].Campaign.Set + ", " + (*rl).Records[index].Campaign.Pub_v_id + ", " +
-					(*rl).Records[index].Campaign.App_id + ", " + (*rl).Records[index].Campaign.Bidder + ", " +
-					(*rl).Records[index].Campaign.Camp_id + ", " + (*rl).Records[index].User.Size + ", " +
-					(*rl).Records[index].Campaign.Ext_id + ", " +
+				entry := (*rl).Records[index].Campaign.App_id + ", " + //(*rl).Records[index].Campaign.Bidder + ", " +
+					//(*rl).Records[index].Campaign.Set + ", " + (*rl).Records[index].Campaign.Pub_v_id + ", " +
+					(*rl).Records[index].Campaign.Camp_id + ", " + //(*rl).Records[index].User.Size + ", " +
+					//(*rl).Records[index].Campaign.Ext_id + ", " +
 					tm.String() + ", " +
-					(*rl).Records[index].Device.Device_mac + ", " + (*rl).Records[index].Device.Device_type + ", " +
-					(*rl).Records[index].Device.Device_model + ", " + (*rl).Records[index].Device.Ios_ifa + ", " +
-					(*rl).Records[index].Device.Android_id + ", " + (*rl).Records[index].User.Ip + ", " +
+					//(*rl).Records[index].Device.Device_mac + ", " +
+					(*rl).Records[index].Device.Device_type + ", " +
+					//(*rl).Records[index].Device.Device_model + ", " + (*rl).Records[index].Device.Ios_ifa + ", " +
+					//(*rl).Records[index].Device.Android_id + ", " +
+					(*rl).Records[index].User.Ip + ", " +
 					(*rl).Records[index].User.Lat + ", " + (*rl).Records[index].User.Lon + ", " +
 					(*rl).Records[index].User.City
 				if _, err = f.WriteString(entry + "\n"); err != nil {
