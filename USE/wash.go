@@ -20,6 +20,7 @@ var (
 	folder_Ouputs       = "/Users/edward/work/wash_output/"
 	folder_base         = "/Users/edward/work/wash"
 	folder_Ouputs_no_os = "/Users/edward/work/WASH_no_os_test/"
+	folder_Dimensions = "/Users/edward/work/wash_dimensions/"
 	//os_flag             = false
 
 	jobPool = jobpool.New(runtime.NumCPU(), 1000)
@@ -97,7 +98,7 @@ func (wp *FolderReader) RunJob(jobRoutine int) {
 	to create a report on % of fields, %SSPs, etc
 	*/
 	//path := folder_Ouputs_no_os + wp.Date + ".csv"
-	dimensionsReport(wp, folder_Ouputs_no_os)
+	dimensionsReport(wp, folder_Dimensions)
 
 	//vadn := "smaato"
 	//ImpsReport(vadn, wp.Folder, wp.Date)
