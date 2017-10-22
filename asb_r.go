@@ -154,10 +154,10 @@ func Read_Records_From_File(path string, rl *[]Record) int {
 				size = line[4]
 			//location
 			case line[2] == "lat" && len(line) > 4:
-			 	lat = line[4]
+				lat = line[4]
 
 			case line[2] == "lon" && len(line) > 4:
-			 	lon = line[4]
+				lon = line[4]
 
 			/**
 			Campaign struct
