@@ -20,7 +20,7 @@ var (
 	folder_Ouputs       = "/Users/edward/work/wash_output/"
 	folder_base         = "/Users/edward/work/wash"
 	folder_Ouputs_no_os = "/Users/edward/work/WASH_no_os_test/"
-	folder_Dimensions = "/Users/edward/work/wash_dimensions/"
+	folder_Dimensions   = "/Users/edward/work/wash_dimensions/"
 	//os_flag             = false
 
 	jobPool = jobpool.New(runtime.NumCPU(), 1000)
@@ -60,10 +60,10 @@ type TrafficRatio struct {
 }
 
 type Geo struct {
-	City        string `json:"city"`
-	Ip 			string  `json:"ip"`
-	Lat			string 	`json:"lat"`
-	Lon			string 	`json:"lon"`
+	City string `json:"city"`
+	Ip   string `json:"ip"`
+	Lat  string `json:"lat"`
+	Lon  string `json:"lon"`
 }
 
 type DimensionsList struct {
@@ -72,8 +72,8 @@ type DimensionsList struct {
 	Conn_type    map[string]int `json:"conn_type"`
 	Carrier_code map[string]int `json:"carrier_code"`
 	Operator     map[string]int `json:"operator"`
-	Os			 map[string]int `json:"os"`
-	GeoList		 []Geo `json:"geo"`
+	Os           map[string]int `json:"os"`
+	GeoList      []Geo          `json:"geo"`
 }
 
 func NewDimensionslist() *DimensionsList {
@@ -84,7 +84,7 @@ func NewDimensionslist() *DimensionsList {
 	dList.Operator = make(map[string]int)
 	dList.Os = make(map[string]int)
 	dList.GeoList = make([]Geo, 0)
-    return &dList
+	return &dList
 }
 
 //parallization of each Date (folder in this case)
@@ -561,128 +561,129 @@ func UnqiueUserReport(vadn string, folder string, Date string) {
 
 func dimensionsReport(wp *FolderReader, folder_path string) {
 
-		DList := NewDimensionslist()
-		//TrafficList := make(map[string]*TrafficRatio) // int) //[]dt.Record)
-		//ReadFolderBase()
-		files := dt.GetFilelist(wp.Folder)
-		fmt.Printf("%s files %v\n", wp.Date, len(files))
-	
-		for _, file := range files {
-	
-			rl := &dt.RecordList{}
-			configFile, err := os.Open(file)
-			if err != nil {
-				fmt.Println("opening json file", err.Error())
-			}
-			jsonParser := json.NewDecoder(configFile)
-			if err = jsonParser.Decode(&rl); err != nil {
-				fmt.Println("parsing config file", err.Error())
-			}
-	
-			for index := range (*rl).Records {
-				if (*rl).Records[index].Campaign.App_id == "574" || 
-					(*rl).Records[index].Campaign.App_id == "575" {
-						os := (*rl).Records[index].Device.Os_n + Records[index].Device.Os_v
-						DList.Os[os] +=1
-						DList.Conn_type[(*rl).Records[index].Device.Conn_type] +=1
-						DList.Carrier_code[(*rl).Records[index].Device.Carrier_code] +=1
-						if ((*rl).Records[index].User.Ip != ""){
-							geo := Geo{
-								City: (*rl).Records[index].User.City,
-								Ip:(*rl).Records[index].User.Ip, 
-								Lat: (*rl).Records[index].User.Lat, 
-								Lon:(*rl).Records[index].User.Lon
-							}
-							DList.GeoList = append( DList.GeoList, geo)
-						}
-						DList.Counter +=1
+	DList := NewDimensionslist()
+	//TrafficList := make(map[string]*TrafficRatio) // int) //[]dt.Record)
+	//ReadFolderBase()
+	files := dt.GetFilelist(wp.Folder)
+	fmt.Printf("%s files %v\n", wp.Date, len(files))
+
+	for _, file := range files {
+
+		rl := &dt.RecordList{}
+		configFile, err := os.Open(file)
+		if err != nil {
+			fmt.Println("opening json file", err.Error())
+		}
+		jsonParser := json.NewDecoder(configFile)
+		if err = jsonParser.Decode(&rl); err != nil {
+			fmt.Println("parsing config file", err.Error())
+		}
+
+		for index := range (*rl).Records {
+			if (*rl).Records[index].Campaign.App_id == "574" ||
+				(*rl).Records[index].Campaign.App_id == "575" {
+				os := (*rl).Records[index].Device.Os_n + (*rl).Records[index].Device.Os_v
+				DList.Os[os] += 1
+				DList.Conn_type[(*rl).Records[index].Device.Conn_type] += 1
+				DList.Carrier_code[(*rl).Records[index].Device.Carrier_code] += 1
+				if (*rl).Records[index].User.Ip != "" {
+					geo := Geo{
+						City: (*rl).Records[index].User.City,
+						Ip:   (*rl).Records[index].User.Ip,
+						Lat:  (*rl).Records[index].User.Lat,
+						Lon:  (*rl).Records[index].User.Lon,
+					}
+					DList.GeoList = append(DList.GeoList, geo)
 				}
-			}
-			fmt.Printf("file: %s done\n", file)
-		}
-
-		//TODO functionlize the print
-		//Print os data
-		os_path := folder_path + wp.Date + "_os.csv"
-		if _, err := os.Stat(os_path); os.IsNotExist(err) {
-			os.Create(os_path)
-		}
-		f_os, err := os.OpenFile(os_path, os.O_APPEND|os.O_WRONLY, 0600)
-		if err != nil {
-			panic(err)
-		}
-		defer f_os.Close()
-	
-		if _, err = f_os.WriteString("os, count"); err != nil {
-			panic(err)
-		}
-
-		for k, v := range DList.Os{
-			if _, err = f_os.WriteString("\n" + k + "," + v){
-				panic(err)
+				DList.Counter += 1
 			}
 		}
+		fmt.Printf("file: %s done\n", file)
+	}
 
-		//Print carrier data
-		carrier_path := folder_path + wp.Date + "_carrier.csv"
-		if _, err := os.Stat(os_path); os.IsNotExist(err) {
-			os.Create(carrier_path)
-		}
-		f_carrier, err := os.OpenFile(carrier_path, os.O_APPEND|os.O_WRONLY, 0600)
-		if err != nil {
+	//TODO functionlize the print
+	//Print os data
+	os_path := folder_path + wp.Date + "_os.csv"
+	if _, err := os.Stat(os_path); os.IsNotExist(err) {
+		os.Create(os_path)
+	}
+	f_os, err := os.OpenFile(os_path, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer f_os.Close()
+
+	if _, err = f_os.WriteString("os, count"); err != nil {
+		panic(err)
+	}
+
+	for k, v := range DList.Os {
+		if _, err = f_os.WriteString("\n" + k + "," + strconv.Itoa(v)); err != nil {
 			panic(err)
 		}
-		defer f_carrier.Close()
-		if _, err = f_carrier.WriteString("carrier, count"); err != nil {
+	}
+
+	//Print carrier data
+	carrier_path := folder_path + wp.Date + "_carrier.csv"
+	if _, err := os.Stat(os_path); os.IsNotExist(err) {
+		os.Create(carrier_path)
+	}
+	f_carrier, err := os.OpenFile(carrier_path, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer f_carrier.Close()
+	if _, err = f_carrier.WriteString("carrier, count"); err != nil {
+		panic(err)
+	}
+
+	for k, v := range DList.Carrier_code {
+		if _, err = f_carrier.WriteString("\n" + k + "," + strconv.Itoa(v)); err != nil {
 			panic(err)
 		}
+	}
 
-		for k, v := range DList.Carrier_code{
-			if _, err = f_carrier.WriteString("\n" + k + "," + v){
-				panic(err)
-			}
-		}
+	//Print geo data
+	geo_path := folder_path + wp.Date + "_geo.csv"
+	if _, err := os.Stat(geo_path); os.IsNotExist(err) {
+		os.Create(geo_path)
+	}
+	f_geo, err := os.OpenFile(geo_path, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer f_geo.Close()
+	if _, err = f_geo.WriteString("ip, city, lat, lon"); err != nil {
+		panic(err)
+	}
 
-		//Print geo data
-		geo_path := folder_path + wp.Date + "_geo.csv"
-		if _, err := os.Stat(geo_path); os.IsNotExist(err) {
-			os.Create(geo_path)
-		}
-		f_geo, err := os.OpenFile(geo_path, os.O_APPEND|os.O_WRONLY, 0600)
-		if err != nil {
+	for g := range DList.GeoList {
+		if _, err = f_geo.WriteString("\n" + DList.GeoList[g].Ip + "," + DList.GeoList[g].City + "," + DList.GeoList[g].Lat + "," + DList.GeoList[g].Lon); err != nil {
 			panic(err)
 		}
-		defer f_geo.Close()
-		if _, err = f_geo.WriteString("ip, city, lat, lon"); err != nil {
-			panic(err)
-		}
+	}
 
-		for g := range DList.GeoList{
-			if _, err = f_geo.WriteString("\n" + g.Ip + "," + g.City + "," + g.Lat + "," + g.Lon ){
-				panic(err)
-			}
-		}
-
-		// for traffic := range TrafficList {
-		// 	heads := strings.Split(traffic, ",")
-		// 	//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
-		// 	//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
-		// 	//if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic]) + ", " + wp.Date); err != nil {
-		// 	total := float64(TrafficList[traffic].Counter)
-		// 	if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " +
-		// 		strconv.Itoa(TrafficList[traffic].Counter) + ", " +
-		// 		strconv.FormatFloat(float64(TrafficList[traffic].Android_id)/total, 'f', 3, 64) + ", " +
-		// 		strconv.FormatFloat(float64(TrafficList[traffic].Carrier_code)/total, 'f', 3, 64) + ", " +
-		// 		strconv.FormatFloat(float64(TrafficList[traffic].Conn_type)/total, 'f', 3, 64) + ", " +
-		// 		strconv.FormatFloat(float64(TrafficList[traffic].Lat)/total, 'f', 3, 64) + ", " +
-		// 		strconv.FormatFloat(float64(TrafficList[traffic].Lon)/total, 'f', 3, 64) + ", " +
-		// 		strconv.FormatFloat(float64(TrafficList[traffic].Smaato)/total, 'f', 3, 64) + ", " +
-		// 		strconv.FormatFloat(float64(TrafficList[traffic].VoiceAd)/total, 'f', 3, 64) + ", " +
-		// 		strconv.FormatFloat(float64(TrafficList[traffic].Status)/total, 'f', 6, 64)); err != nil {
-		// 		panic(err)
-		// 	}
-		// }
+	// for traffic := range TrafficList {
+	// 	heads := strings.Split(traffic, ",")
+	// 	//fmt.Println(heads[0], ", ",heads[1], ", ", heads[2], " = ", len(TrafficList[traffic]))
+	// 	//word := heads[0]+ ", "+heads[1]+ ", "+ heads[2]+ " = "+ len(TrafficList[traffic])
+	// 	//if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " + strconv.Itoa(TrafficList[traffic]) + ", " + wp.Date); err != nil {
+	// 	total := float64(TrafficList[traffic].Counter)
+	// 	if _, err = f.WriteString("\n" + heads[0] + ", " + heads[1] + ", " + heads[2] + ", " +
+	// 		strconv.Itoa(TrafficList[traffic].Counter) + ", " +
+	// 		strconv.FormatFloat(float64(TrafficList[traffic].Android_id)/total, 'f', 3, 64) + ", " +
+	// 		strconv.FormatFloat(float64(TrafficList[traffic].Carrier_code)/total, 'f', 3, 64) + ", " +
+	// 		strconv.FormatFloat(float64(TrafficList[traffic].Conn_type)/total, 'f', 3, 64) + ", " +
+	// 		strconv.FormatFloat(float64(TrafficList[traffic].Lat)/total, 'f', 3, 64) + ", " +
+	// 		strconv.FormatFloat(float64(TrafficList[traffic].Lon)/total, 'f', 3, 64) + ", " +
+	// 		strconv.FormatFloat(float64(TrafficList[traffic].Smaato)/total, 'f', 3, 64) + ", " +
+	// 		strconv.FormatFloat(float64(TrafficList[traffic].VoiceAd)/total, 'f', 3, 64) + ", " +
+	// 		strconv.FormatFloat(float64(TrafficList[traffic].Status)/total, 'f', 6, 64)); err != nil {
+	// 		panic(err)
+	// 	}
+	// }
 }
+
 /*
 func LBSReport(vadn string, folder string, Date string) {
 
@@ -698,7 +699,7 @@ func LBSReport(vadn string, folder string, Date string) {
 	defer f.Close()
 
 	//csv header
-	
+
 	// if _, err = f.WriteString("set, pub_v_id, app_id, bidder, camp_id, size, ext_id, time, device_mac, ios_ifa, android_id, ip\n"); err != nil {
 	// 	panic(err)
 	// }
