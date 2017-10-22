@@ -625,7 +625,7 @@ func dimensionsReport(wp *FolderReader, folder_path string) {
 
 	//Print carrier data
 	carrier_path := folder_path + wp.Date + "_carrier.csv"
-	if _, err := os.Stat(os_path); os.IsNotExist(err) {
+	if _, err := os.Stat(carrier_path); os.IsNotExist(err) {
 		os.Create(carrier_path)
 	}
 	f_carrier, err := os.OpenFile(carrier_path, os.O_APPEND|os.O_WRONLY, 0600)
