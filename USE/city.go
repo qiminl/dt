@@ -1,15 +1,37 @@
 package main
 
 import (
-	dt "dt"
 	"encoding/csv"
 	"os"
 	"strconv"
 	"fmt"
+	"sort"
 	// "io/ioutil"
 	// //"strconv"
 	// "strings"
 )
+
+
+type Pair struct {
+	Key string
+	Value int
+}
+type PairList []Pair
+
+func SortMap(city_code map[string]int) PairList{
+	pl := make(PairList, len(city_code))
+	i := 0
+	for k, v := range city_code {
+	  pl[i] = Pair{k, v}
+	  i++
+	}
+	sort.Sort(sort.Reverse(pl))
+	return pl
+}
+func (p PairList) Len() int { return len(p) }
+func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
+func (p PairList) Swap(i, j int){ p[i], p[j] = p[j], p[i] }
+
 type GeoRecord struct{
 	Ip string 
 	City string
@@ -106,7 +128,7 @@ func ExportFile (city_path string, city_code map[string]int){
 	}
 }
 
-func ExportPair (city_path string, city_code dt.PairList){
+func ExportPair (city_path string, city_code PairList){
 	if _, err := os.Stat(city_path); os.IsNotExist(err) {
 		os.Create(city_path)
 	}
@@ -142,7 +164,7 @@ func main() {
 	geodb_path := geodb_dir + "GeoLite2-City-Locations-zh-CN.csv"
 	ReplaceCode(geodb_path, city_code)
 
-	pairList := dt.SortMap(city_code)
+	pairList := SortMap(city_code)
 	//Print geo data
 	city_path := directory + date + "-report/" + date + "_citycode.csv"
 	ExportPair(city_path, pairList)
